@@ -1,0 +1,26 @@
+# Credentials (never commit)
+*.credentials
+*.key
+*.secret
+.env
+
+# Claude Code / OMC state (may cache secrets)
+.omc/
+.claude/
+
+# Session files (may contain PII)
+session-learnings*.md
+
+# Config with personal data
+config/reading-prefs.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
