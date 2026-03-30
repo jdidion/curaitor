@@ -6,7 +6,8 @@ An article reading assistant that automates discovery and triage while keeping y
 
 - `/cu:triage` — Process Instapaper saves: fetch, evaluate, route to Obsidian, archive
 - `/cu:discover` — Surface new articles from RSS feeds with semantic relevance evaluation
-- `/cu:review` — Interactive review: browse articles in cmux browser, discuss, give verdicts
+- `/cu:review` — Interactive review: browse Review queue in cmux browser, discuss, give verdicts
+- `/cu:read` — Deep reading: read Inbox articles with full summary, RAG discussion, save or discard
 - `/cu:review-ignored` — Check Ignored folder for false negatives
 - `/cu:seed-preferences` — One-time: analyze Zotero + Instapaper history to build initial preferences
 
