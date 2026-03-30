@@ -92,18 +92,19 @@ Repo: github.com/davidtarjan/pi-mono (if detected)
 
 ### e. Ask for verdict
 
-Use AskUserQuestion with ALL of these options every time. Do NOT omit any options:
+Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the menu as text and wait for the user to type their response:
 
-1. **!** — "Deep read: save permanently, discuss interactively, save notes"
-2. **?** — "Discuss: ask questions about this article before deciding"
-3. **y** — "Inbox: interested, star repo if detected"
-4. **c** — "Clip: just add tool/repo to Tools & Projects catalog, discard article" (only show when a repo or tool/library website is detected)
-5. **s** — "Zotero: save as reference"
-6. **n** — "Ignored: not interested"
-7. **skip** — "Leave in Review for later"
-8. **q** — "Quit review session"
+```
+!:deep-read  ?:discuss  y:inbox  c:clip  r:zotero  n:ignore  skip  q:quit
+```
 
-IMPORTANT: Always include all options. Only omit **c** if no repo or tool website is detected.
+Only include **c** if a repo or tool website was detected.
+
+The user can type:
+- A bare key: `y`, `n`, `s`, `c`, `skip`, `q`
+- **`! <comment>`** — deep read with an initial note/context (e.g., `! compare this to our current approach`)
+- **`? <question>`** — ask a specific question (e.g., `? does this support hg38?`)
+- Any other free text — treated as a question about the article, answer it, then re-show the menu
 
 ### f. Handle verdict
 
@@ -111,7 +112,7 @@ IMPORTANT: Always include all options. Only omit **c** if no repo or tool websit
 - **?** → **Discussion mode**: fetch the full article text via WebFetch or `cmux browser snapshot`, then enter a conversational loop where the user asks questions and Claude answers from the article content. When the user is done asking questions (says "done", "ok", "next", or similar), re-present the verdict options so they can make a final decision.
 - **y** → move to `Inbox/`, update frontmatter. If repo detected: star it via `gh api user/starred/{owner}/{repo} -X PUT` and add to Tools catalog.
 - **c** → **Clip**: add the repo/tool to `Tools & Projects.md` in Obsidian (star the repo if GitHub), then move the article to `Ignored/` (the article itself isn't worth keeping, but the tool reference is). Do NOT save to Inbox or Zotero.
-- **s** → save to Zotero via API, move to `Inbox/`, add zotero_key to frontmatter
+- **r** → save to Zotero via API, move to `Inbox/`, add zotero_key to frontmatter
 - **n** → move to `Ignored/`, update frontmatter
 - **skip** → leave in `Review/`
 - **q** → stop, show session summary
