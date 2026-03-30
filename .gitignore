@@ -4,9 +4,10 @@
 *.secret
 .env
 
-# Claude Code / OMC state (may cache secrets)
+# Claude Code state (may cache secrets)
 .omc/
-.claude/
+.claude/*
+!.claude/commands/
 
 # Session files (may contain PII)
 session-learnings*.md
