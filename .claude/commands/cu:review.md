@@ -73,12 +73,26 @@ cmux browser goto "URL" --surface surface:NN
 cmux browser wait --load-state complete --surface surface:NN --timeout-ms 5000
 ```
 
-### d. Present Claude's assessment
+### d. Auto-tag and search for related topics
+
+Generate 3-8 semantic tags from the article content:
+- Lowercase, hyphenated (e.g., `variant-calling`, `ai-agents`, `cfDNA`)
+- Mix of broad (`genomics`, `machine-learning`) and specific (`bloom-filters`, `nanopore-basecalling`)
+- Check existing vault tags first — prefer existing tags over creating synonyms
+
+Then search Obsidian for matching topic notes:
+1. `mcp__obsidian__search_notes` for key tags
+2. Check `Topics/` folder for notes with matching tags
+3. Note any matches for display
+
+### e. Present Claude's assessment
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Article 1/18: "Optimize LLM Efficiency with Sequencing Tool"
 Category: ai-tooling | Source: instapaper
 Repo: github.com/davidtarjan/pi-mono (if detected)
+Tags: ai-agents, token-optimization, tool-batching
+Topics: [[AI-Assisted Development]] (if any found)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ## Summary
@@ -90,28 +104,36 @@ Repo: github.com/davidtarjan/pi-mono (if detected)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-### e. Ask for verdict
+### f. Ask for verdict
 
 Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the menu as text and wait for the user to type their response:
 
 ```
-!:deep-read  ?:discuss  y:inbox  c:clip  r:zotero  n:ignore  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  n:ignore  skip  q:quit
 ```
 
-Only include **c** if a repo or tool website was detected.
+Only include **c** if a repo or tool website was detected. Only include **t** if related topics were found or the article could start a new topic.
 
 The user can type:
-- A bare key: `y`, `n`, `s`, `c`, `skip`, `q`
-- **`! <comment>`** — deep read with an initial note/context (e.g., `! compare this to our current approach`)
-- **`? <question>`** — ask a specific question (e.g., `? does this support hg38?`)
-- Any other free text — treated as a question about the article, answer it, then re-show the menu
+- A bare key: `y`, `n`, `c`, `r`, `t`, `skip`, `q`
+- **`! <comment>`** — deep read with initial context
+- **`? <question>`** — ask a question before deciding
+- **`t <topic name>`** — attach to existing topic or create new one
+- Any other free text — treated as a question, answer it, re-show menu
 
-### f. Handle verdict
+### g. Handle verdict
 
 - **!** → **Deep read mode** (see below). If repo detected: star it and add to Tools catalog.
-- **?** → **Discussion mode**: fetch the full article text via WebFetch or `cmux browser snapshot`, then enter a conversational loop where the user asks questions and Claude answers from the article content. When the user is done asking questions (says "done", "ok", "next", or similar), re-present the verdict options so they can make a final decision.
-- **y** → move to `Inbox/`, update frontmatter. If repo detected: star it via `gh api user/starred/{owner}/{repo} -X PUT` and add to Tools catalog.
-- **c** → **Clip**: add the repo/tool to `Tools & Projects.md` in Obsidian (star the repo if GitHub), then move the article to `Ignored/` (the article itself isn't worth keeping, but the tool reference is). Do NOT save to Inbox or Zotero.
+- **?** → **Discussion mode**: fetch full article text, conversational Q&A loop, re-present verdict when user says "done".
+- **y** → move to `Inbox/`, update frontmatter with tags. If repo detected: star it and add to Tools catalog.
+- **t** → **Topic mode**: attach article to a topic, then delete from Review/ (article lives under the topic, not separately):
+  - If user typed `t` alone and related topics were found: list them, ask which one (or "new")
+  - If user typed `t <topic name>`: use that topic (create in `Topics/` if new)
+  - Add article as a `[[wiki-link]]` under `## Related Articles` in the topic note
+  - Add article URL, title, and summary as a sub-entry in the topic note
+  - If repo detected: also star it and add to Tools catalog
+  - Delete the article from `Review/` — it's now referenced from the topic, no need to keep separately
+- **c** → **Clip**: add repo/tool to `Tools & Projects.md`, star if GitHub, move article to `Ignored/`.
 - **r** → save to Zotero via API, move to `Inbox/`, add zotero_key to frontmatter
 - **n** → move to `Ignored/`, update frontmatter
 - **skip** → leave in `Review/`

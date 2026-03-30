@@ -166,6 +166,39 @@ Many articles are LinkedIn posts requiring login:
 - Pre-authenticate at session start if LinkedIn URLs are in the review queue
 - User may need to approve 2FA via phone
 
+## Auto-tagging and topic linking
+
+### Tagging
+When writing ANY Obsidian note (triage, discover, or review), always generate semantic tags from the article content. Tags should be:
+- Lowercase, hyphenated (e.g., `variant-calling`, `ai-agents`, `cfDNA`)
+- A mix of broad (`genomics`, `machine-learning`) and specific (`bloom-filters`, `nanopore-basecalling`)
+- 3-8 tags per article
+- Stored in frontmatter `tags` array
+
+### Topic detection
+Before finalizing an article note, search Obsidian for existing topic notes that match the article's tags:
+1. Use `mcp__obsidian__search_notes` to find notes tagged with the same terms
+2. Look in `Topics/` folder for existing topic notes
+3. If matching topics are found, mention them when presenting the article:
+   ```
+   Related topics: [[Variant Calling Methods]], [[AI-Assisted Development]]
+   ```
+
+### Topic linking
+When a match is found during `/cu:review`:
+- Add the topic names to the article note as `related_topics` in frontmatter
+- Add `[[wiki-links]]` to the related topics in the note body
+- Offer to append a backlink in the topic note (e.g., under a "## Related Articles" section)
+
+When the user asks to "create a new topic" during review:
+1. Create a note in `Topics/{Topic Name}.md` with frontmatter tags
+2. Add the current article as the first related article
+3. Ask the user for a brief description of the topic scope
+4. Search Obsidian for other existing articles that match the topic's tags and offer to link them
+
+### Tag consistency
+When generating tags, first check what tags already exist in the vault by scanning recent notes. Prefer existing tags over creating new synonyms (e.g., if `variant-calling` exists, don't create `variant-callers`).
+
 ## Preference learning
 
 `config/reading-prefs.md` contains natural language rules. After each review verdict, if the decision reveals a genuinely new pattern, append to `## Learned patterns`:
