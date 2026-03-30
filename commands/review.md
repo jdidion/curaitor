@@ -97,18 +97,20 @@ Use AskUserQuestion with ALL of these options every time. Do NOT omit any option
 1. **!** — "Deep read: save permanently, discuss interactively, save notes"
 2. **?** — "Discuss: ask questions about this article before deciding"
 3. **y** — "Inbox: interested, star repo if detected"
-4. **s** — "Zotero: save as reference"
-5. **n** — "Ignored: not interested"
-6. **skip** — "Leave in Review for later"
-7. **q** — "Quit review session"
+4. **c** — "Clip: just add tool/repo to Tools & Projects catalog, discard article" (only show when a repo or tool/library website is detected)
+5. **s** — "Zotero: save as reference"
+6. **n** — "Ignored: not interested"
+7. **skip** — "Leave in Review for later"
+8. **q** — "Quit review session"
 
-IMPORTANT: Always include all 7 options. Do NOT omit any.
+IMPORTANT: Always include all options. Only omit **c** if no repo or tool website is detected.
 
 ### f. Handle verdict
 
 - **!** → **Deep read mode** (see below). If repo detected: star it and add to Tools catalog.
-- **?** → **Discussion mode**: fetch the full article text via WebFetch or `cmux browser snapshot`, then enter a conversational loop where the user asks questions and Claude answers from the article content. When the user is done asking questions (says "done", "ok", "next", or similar), re-present the verdict options (all 7) so they can make a final decision.
+- **?** → **Discussion mode**: fetch the full article text via WebFetch or `cmux browser snapshot`, then enter a conversational loop where the user asks questions and Claude answers from the article content. When the user is done asking questions (says "done", "ok", "next", or similar), re-present the verdict options so they can make a final decision.
 - **y** → move to `Inbox/`, update frontmatter. If repo detected: star it via `gh api user/starred/{owner}/{repo} -X PUT` and add to Tools catalog.
+- **c** → **Clip**: add the repo/tool to `Tools & Projects.md` in Obsidian (star the repo if GitHub), then move the article to `Ignored/` (the article itself isn't worth keeping, but the tool reference is). Do NOT save to Inbox or Zotero.
 - **s** → save to Zotero via API, move to `Inbox/`, add zotero_key to frontmatter
 - **n** → move to `Ignored/`, update frontmatter
 - **skip** → leave in `Review/`
