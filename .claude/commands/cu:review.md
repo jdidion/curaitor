@@ -109,7 +109,7 @@ Topics: [[AI-Assisted Development]] (if any found)
 Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the menu as text and wait for the user to type their response:
 
 ```
-!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  a:archive  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  p:post  a:archive  skip  q:quit
 ```
 
 Only include **c** if a repo or tool website was detected. Only include **t** if related topics were found or the article could start a new topic.
@@ -136,9 +136,40 @@ The user can type:
   - Delete the article from `Review/` — it's now referenced from the topic, no need to keep separately
 - **c** → **Clip**: add repo/tool to `Tools & Projects.md`, star if GitHub, delete article from `Review/`.
 - **r** → save to Zotero via API, move to `Inbox/`, add zotero_key to frontmatter
+- **p** → **Post to Slack** (see Post flow below), then archive the article.
 - **a** → **Archive**: the user has reviewed this and doesn't want to keep it. Append an entry to `Archive/Archive.md` in Obsidian (see Archive format below), then delete the article from `Review/`. NEVER move articles to `Ignored/` — that folder is only for triage-agent classifications.
 - **skip** → leave in `Review/`
 - **q** → stop, show session summary
+
+### Post to Slack flow (p)
+
+1. **Prompt for channel**: Print the default channel from `config/user-settings.yaml` (`default_slack_channel`), ask the user to type a channel name, user ID (for DM), or hit enter to accept the default.
+
+2. **Draft the message**: Compose a Slack message with:
+   - Article title as a link
+   - 1-2 sentence summary
+   - Why it's interesting (from Claude's assessment or user's discussion)
+   - Tags as hashtags
+
+   Example:
+   ```
+   *<https://github.com/steveyegge/beads|Beads: A memory upgrade for your coding agent>*
+   Persistent structured memory for coding agents using Dolt. Replaces markdown plans with dependency-aware graphs for long-horizon tasks.
+   Worth checking out if you're building agentic workflows. #ai-agents #developer-tools
+   ```
+
+3. **Present draft to user**: Print the draft and ask the user to edit or approve:
+   ```
+   Draft message for #ai-general:
+
+   [message text]
+
+   Send as-is (enter), edit (type replacement), or cancel (x)?
+   ```
+
+4. **Send**: Use `mcp__slack-mcp__send_slack_message` with the channel and final message text.
+
+5. **Archive**: After posting, append to `Archive/Archive.md` with `Reason archived: Posted to Slack #{channel}`, then delete from `Review/`.
 
 ### Archive format
 

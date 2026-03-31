@@ -15,6 +15,7 @@ session-learnings*.md
 # Config with personal data
 config/reading-prefs.md
 config/feeds.yaml
+config/user-settings.yaml
 
 # Python
 __pycache__/

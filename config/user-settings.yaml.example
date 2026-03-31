@@ -1,0 +1,6 @@
+# Per-user curaitor settings (gitignored)
+# Copy to config/user-settings.yaml and customize
+
+# Default Slack channel for the "p" (post) command
+# Can be a channel name or user ID (for DMs)
+default_slack_channel: "#ai-general"
