@@ -1,0 +1,45 @@
+# curaitor docker-compose
+# Usage:
+#   docker compose up triage     # run triage once
+#   docker compose up discover   # run discover once
+#   docker compose up review     # interactive review (attach terminal)
+
+services:
+  triage:
+    build: .
+    command: ["/cu:triage"]
+    volumes:
+      - ./.env:/app/.env:ro
+      - ./config:/app/config:rw       # preferences + feeds (rw for preference updates)
+      - ${OBSIDIAN_VAULT:-~/Library/CloudStorage}:/vault:rw
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    profiles: ["triage"]
+
+  discover:
+    build: .
+    command: ["/cu:discover"]
+    volumes:
+      - ./.env:/app/.env:ro
+      - ./config:/app/config:rw
+      - ${OBSIDIAN_VAULT:-~/Library/CloudStorage}:/vault:rw
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    profiles: ["discover"]
+
+  review:
+    build: .
+    entrypoint: ["claude"]
+    command: []
+    stdin_open: true
+    tty: true
+    network_mode: host    # needed for MCP servers on localhost
+    volumes:
+      - ./.env:/app/.env:ro
+      - ./config:/app/config:rw
+      - ${OBSIDIAN_VAULT:-~/Library/CloudStorage}:/vault:rw
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - BW_SESSION=${BW_SESSION:-}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+    profiles: ["review"]
