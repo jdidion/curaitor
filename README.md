@@ -52,9 +52,9 @@ curaitor learns your interests over time. Every time you give feedback during `/
 | `?` | **Discuss** — ask questions about the article before deciding |
 | `y` | Interested — move to Inbox. Star GitHub repo if detected. |
 | `t` | **Topic** — attach to an existing or new topic in Obsidian |
-| `c` | **Clip** — add repo/tool to Tools & Projects catalog, discard article |
+| `c` | **Clip** — add repo/tool to Tools & Projects catalog, delete article |
 | `r` | Save to Zotero as reference |
-| `n` | Not interested — move to Ignored |
+| `a` | **Archive** — reviewed, not keeping. Logged to `Archive/Archive.md` with audit trail. |
 | `skip` | Leave in Review for later |
 | `q` | Quit review session |
 
@@ -67,7 +67,7 @@ Inline commands: `! compare to our pipeline`, `? does this support hg38?`, `t Va
 | `r` | Save to Zotero (papers), with discussion notes |
 | `t` | Attach to a topic |
 | `c` | Clip tool to Tools & Projects catalog |
-| `d` | Discard — not worth keeping after reading |
+| `a` | **Archive** — reviewed, not keeping. Logged with audit trail. |
 | `skip` | Leave in Inbox |
 | `q` | Quit |
 

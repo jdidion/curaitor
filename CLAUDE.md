@@ -90,8 +90,14 @@ Articles are stored as notes with structured frontmatter. Access via Obsidian MC
 ### Folders
 - **Inbox/** — high-confidence interesting, ready to read
 - **Review/** — uncertain, needs human review
-- **Ignored/** — confident not interesting
+- **Ignored/** — triage agent thinks not interesting (machine classification, reviewable for false negatives)
+- **Archive/** — human-reviewed and dismissed, with audit trail in `Archive/Archive.md`
 - **Library/** — permanently saved articles from deep read sessions
+- **Topics/** — topic notes with linked articles
+
+### Ignored vs Archive
+- **Ignored/** is written ONLY by triage/discover agents (machine classification). The review agent reads from it (for `/cu:review-ignored`) and moves articles OUT, but NEVER adds to it.
+- **Archive/** is written ONLY by the review/read agents (human decision). Contains `Archive.md` with a running log of reviewed-and-dismissed articles including questions asked and reasons given.
 
 ### Note format
 ```markdown
@@ -133,7 +139,7 @@ NEVER use AskUserQuestion during `/cu:review` or `/cu:review-ignored`. It only s
 
 Menu (printed as text, not AskUserQuestion):
 ```
-!:deep-read  ?:discuss  y:inbox  c:clip  r:zotero  n:ignore  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  a:archive  skip  q:quit
 ```
 
 Users can type inline commands:
@@ -145,9 +151,9 @@ Users can type inline commands:
 - **!** — Deep read: save permanently (papers→Zotero, others→Library/), fetch full text, interactive RAG discussion, save discussion notes when done
 - **?** — Discuss: fetch full text, answer questions, re-show menu when user says "done"
 - **y** — Inbox: move to Inbox/, star GitHub repo if detected, add to Tools & Projects catalog
-- **c** — Clip: add repo/tool to Tools & Projects catalog only, move article to Ignored/ (only shown when repo/tool detected)
+- **c** — Clip: add repo/tool to Tools & Projects catalog, delete article (only shown when repo/tool detected)
 - **r** — Zotero: save as reference via Zotero API
-- **n** — Ignored: not interested
+- **a** — Archive: reviewed, not keeping (logged to Archive/Archive.md with audit trail)
 - **skip** — Leave in Review/
 - **q** — Quit, show session summary
 

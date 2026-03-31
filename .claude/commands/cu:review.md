@@ -109,16 +109,17 @@ Topics: [[AI-Assisted Development]] (if any found)
 Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the menu as text and wait for the user to type their response:
 
 ```
-!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  n:ignore  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  a:archive  skip  q:quit
 ```
 
 Only include **c** if a repo or tool website was detected. Only include **t** if related topics were found or the article could start a new topic.
 
 The user can type:
-- A bare key: `y`, `n`, `c`, `r`, `t`, `skip`, `q`
+- A bare key: `y`, `a`, `c`, `r`, `t`, `skip`, `q`
 - **`! <comment>`** — deep read with initial context
 - **`? <question>`** — ask a question before deciding
 - **`t <topic name>`** — attach to existing topic or create new one
+- **`a <reason>`** — archive with a reason (e.g., `a not relevant to current work`)
 - Any other free text — treated as a question, answer it, re-show menu
 
 ### g. Handle verdict
@@ -133,11 +134,27 @@ The user can type:
   - Add article URL, title, and summary as a sub-entry in the topic note
   - If repo detected: also star it and add to Tools catalog
   - Delete the article from `Review/` — it's now referenced from the topic, no need to keep separately
-- **c** → **Clip**: add repo/tool to `Tools & Projects.md`, star if GitHub, move article to `Ignored/`.
+- **c** → **Clip**: add repo/tool to `Tools & Projects.md`, star if GitHub, delete article from `Review/`.
 - **r** → save to Zotero via API, move to `Inbox/`, add zotero_key to frontmatter
-- **n** → move to `Ignored/`, update frontmatter
+- **a** → **Archive**: the user has reviewed this and doesn't want to keep it. Append an entry to `Archive/Archive.md` in Obsidian (see Archive format below), then delete the article from `Review/`. NEVER move articles to `Ignored/` — that folder is only for triage-agent classifications.
 - **skip** → leave in `Review/`
 - **q** → stop, show session summary
+
+### Archive format
+
+`Archive/Archive.md` is a running log of reviewed-and-dismissed articles. Append each archived article as:
+
+```markdown
+### {title}
+- **URL**: {url}
+- **Date reviewed**: {YYYY-MM-DD}
+- **Category**: {category}
+- **Summary**: {1-2 sentence summary}
+- **Questions asked**: {list any questions the user asked during ? or ! mode, or "none"}
+- **Reason archived**: {user's reason if provided, otherwise "Reviewed — not keeping"}
+```
+
+The review agent should NEVER add articles to `Ignored/`. Only the triage agent (`/cu:triage`, `/cu:discover`) writes to `Ignored/`. The review agent only reads from `Ignored/` (for `/cu:review-ignored`) and moves articles OUT of it.
 
 ### f. Star GitHub repos (on y or !)
 

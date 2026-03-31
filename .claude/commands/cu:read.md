@@ -95,14 +95,14 @@ Continue until the user signals they're done by typing a verdict key or "done".
 After the discussion (or if the user gives a verdict at any point), print:
 
 ```
-r:zotero  t:topic  c:clip  d:discard  skip  q:quit
+r:zotero  t:topic  c:clip  a:archive  skip  q:quit
 ```
 
 The user can type:
 - **r** — Save to Zotero (for publications/papers), then remove from Inbox
 - **t** or **t Topic Name** — Attach to a topic (existing or new), remove from Inbox
 - **c** — Clip: star GitHub repo + add to Tools & Projects catalog, remove from Inbox (for tools/libraries)
-- **d** — Discard: remove from Inbox (not worth keeping after reading)
+- **a** or **a reason** — Archive: reviewed and not keeping. Logs to `Archive/Archive.md` with audit trail.
 - **skip** — Leave in Inbox, move to next article
 - **q** — Quit, show session summary
 - Any other text — continue the discussion
@@ -112,7 +112,16 @@ The user can type:
 - **r** → Save to Zotero via API. Add discussion notes as a Zotero note attachment. Delete from Obsidian `Inbox/`.
 - **t** → Attach to topic (same flow as `/cu:review` topic mode). Add article summary + discussion notes under the topic. Delete from `Inbox/`.
 - **c** → Star GitHub repo (`gh api user/starred/OWNER/REPO -X PUT`), add to `Tools & Projects.md`, delete from `Inbox/`.
-- **d** → Delete from `Inbox/` via `mcp__obsidian__delete_note`. Article is gone — the user read it and decided it's not worth saving.
+- **a** → **Archive**: append an entry to `Archive/Archive.md` with title, URL, date, summary, questions asked during discussion, and reason (if provided). Then delete from `Inbox/`. Format:
+  ```markdown
+  ### {title}
+  - **URL**: {url}
+  - **Date reviewed**: {YYYY-MM-DD}
+  - **Category**: {category}
+  - **Summary**: {1-2 sentence summary}
+  - **Questions asked**: {list from discussion, or "none"}
+  - **Reason archived**: {user's reason if provided, otherwise "Reviewed — not keeping"}
+  ```
 - **skip** → Leave in `Inbox/`, move to next article.
 - **q** → Stop, show session summary.
 
