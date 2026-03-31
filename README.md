@@ -117,23 +117,19 @@ print(resp.text)  # oauth_token=X&oauth_token_secret=Y
 
 ### 4. Import RSS feeds
 
-Export OPML from your feed reader (Feedly, Inoreader, etc.) and have Claude parse it:
+Export OPML from your feed reader (Feedly, Inoreader, etc.) and import it:
 
-```
-Paste: "Import feeds from ~/Downloads/export.opml, only the Science folder"
+```bash
+python scripts/import-opml.py ~/Downloads/feedly-export.opml --folder Science
 ```
 
-Or manually edit `config/feeds.yaml`:
+This creates `config/feeds.yaml` (gitignored — personal to you). You can also append feeds from multiple OPML folders:
 
-```yaml
-feeds:
-  - name: Nature Genetics
-    url: http://feeds.nature.com/ng/rss/current
-    category: science
-  - name: arXiv cs.AI
-    url: https://rss.arxiv.org/rss/cs.AI
-    category: ai
+```bash
+python scripts/import-opml.py ~/Downloads/export.opml --folder Tech --append
 ```
+
+Or manually edit `config/feeds.yaml` (see `config/feeds.yaml.example`). Per-feed `user_agent` overrides are supported for sites that block bots.
 
 ### 5. Seed preferences
 
