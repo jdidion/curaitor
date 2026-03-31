@@ -3,6 +3,10 @@
 # Cleaned 2026-03-30: removed dead/broken feeds
 
 feeds:
+- name: GenomeWeb
+  url: https://www.genomeweb.com/channel/all/rss
+  category: science
+  user_agent: "Googlebot/2.1 (+http://www.google.com/bot.html)"
 - name: bioRxiv Bioinformatics Genetics Genomics
   url: http://connect.biorxiv.org/biorxiv_xml.php?subject=bioinformatics+genetics+genomics
   category: science

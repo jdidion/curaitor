@@ -37,10 +37,11 @@ def parse_date(date_str):
     return None
 
 
-def fetch_feed(url, timeout=30):
+def fetch_feed(url, timeout=30, user_agent=None):
     """Fetch and parse an RSS/Atom feed, return list of articles."""
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; curaitor/1.0)'})
+        ua = user_agent or 'Mozilla/5.0 (compatible; curaitor/1.0)'
+        req = urllib.request.Request(url, headers={'User-Agent': ua})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = resp.read()
     except Exception as e:
@@ -147,7 +148,7 @@ def main():
         if category_filter and feed.get('category') != category_filter:
             continue
 
-        articles, error = fetch_feed(feed['url'])
+        articles, error = fetch_feed(feed['url'], user_agent=feed.get('user_agent'))
         if error:
             results.append({
                 'feed': feed['name'],
