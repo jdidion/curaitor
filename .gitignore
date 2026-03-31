@@ -16,6 +16,7 @@ session-learnings*.md
 config/reading-prefs.md
 config/feeds.yaml
 config/user-settings.yaml
+config/zotero.yaml
 
 # Python
 __pycache__/

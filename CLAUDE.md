@@ -247,6 +247,23 @@ When generating tags, first check what tags already exist in the vault by scanni
 ```
 Only log informative patterns — not every decision.
 
+## Zotero integration
+
+Saves papers via Zotero's local connector API (`localhost:23119`). Setup:
+1. Enable local API in Zotero: Preferences > Advanced > "Allow other applications..."
+2. Copy `config/zotero.yaml.example` to `config/zotero.yaml` and set your collection
+
+Helper script (reduces token usage):
+```bash
+python scripts/zotero.py check                          # is Zotero running?
+python scripts/zotero.py collections                    # list collections
+python scripts/zotero.py save URL --title T --tags t1,t2 --collection C1
+python scripts/zotero.py add-note ITEM_KEY "<p>HTML note</p>"
+python scripts/zotero.py search QUERY
+```
+
+Paper detection: DOI URLs, bioRxiv, arXiv, nature.com/articles, academic.oup.com, springer.com. Non-papers only saved to Zotero on explicit `r` verdict.
+
 ## Feeds
 
 `config/feeds.yaml` lists RSS feeds for `/cu:discover`. Add/remove by editing the file.
