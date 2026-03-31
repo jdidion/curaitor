@@ -14,9 +14,42 @@ An article reading assistant that automates discovery and triage while keeping y
 ## Setup
 
 1. Copy `.env.example` to `.env` and fill in your API credentials
-2. Install: `pip install requests-oauthlib`
+2. Install: `pip3 install requests-oauthlib pyyaml`
 3. Run `claude` in this directory — all `/cu:*` commands are available
 4. Run `/cu:seed-preferences` to initialize from your reading history
+
+## Scripts (reduce token usage)
+
+Use these instead of inline Python — they handle OAuth, parsing, and batch operations:
+
+```bash
+# Find the right Python (pixi's python3 may lack deps)
+eval "$(bash scripts/find-python.sh)"
+
+# Instapaper API
+$CURAITOR_PYTHON scripts/instapaper.py list [--limit N] [--folder archive]
+$CURAITOR_PYTHON scripts/instapaper.py text BOOKMARK_ID
+$CURAITOR_PYTHON scripts/instapaper.py archive ID [ID ...]
+
+# RSS feeds
+$CURAITOR_PYTHON scripts/feeds.py [--days N] [--category CAT]
+
+# Batch write Obsidian notes (faster than individual MCP calls for >10 notes)
+echo '[{"path":"Inbox/title.md","frontmatter":{...},"content":"..."}]' | $CURAITOR_PYTHON scripts/write-notes.py
+
+# Workspace setup
+bash scripts/setup.sh [review|triage|both]
+```
+
+For interactive single-note operations, prefer `mcp__obsidian__write_note` (MCP). For batch triage (>10 articles), use `scripts/write-notes.py`.
+
+## Triage rules
+
+`config/triage-rules.yaml` contains deterministic routing rules that supplement LLM evaluation:
+- `inbox_domains`: articles from these domains go straight to Inbox
+- `inbox_title_keywords`: title keyword matches → Inbox
+- `ignored_title_patterns`: known junk patterns → Ignored
+- `source_weights`: Instapaper saves (hand-curated) get higher signal weight than RSS
 
 ## Credentials
 
