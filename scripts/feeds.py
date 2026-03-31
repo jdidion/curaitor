@@ -40,7 +40,7 @@ def parse_date(date_str):
 def fetch_feed(url, timeout=30):
     """Fetch and parse an RSS/Atom feed, return list of articles."""
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'curaitor/1.0'})
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; curaitor/1.0)'})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = resp.read()
     except Exception as e:
