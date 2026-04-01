@@ -95,7 +95,7 @@ Continue until the user signals they're done by typing a verdict key or "done".
 After the discussion (or if the user gives a verdict at any point), print:
 
 ```
-r:zotero  t:topic  c:clip  p:post  a:archive  skip  q:quit
+r:zotero  t:topic  c:clip  b:bookmark  p:post  a:archive  skip  q:quit
 ```
 
 The user can type:
@@ -113,6 +113,7 @@ The user can type:
 - **r** → Save to Zotero via API. Add discussion notes as a Zotero note attachment. Delete from Obsidian `Inbox/`.
 - **t** → Attach to topic (same flow as `/cu:review` topic mode). Add article summary + discussion notes under the topic. Delete from `Inbox/`.
 - **c** → Star GitHub repo (`gh api user/starred/OWNER/REPO -X PUT`), add to `Tools & Projects.md`, delete from `Inbox/`.
+- **b** → **Bookmark**: save the link to `Bookmarks.md` in Obsidian vault root (organized by category, same format as Tools & Projects). If `config/user-settings.yaml` has `bookmark_command`, run that instead. Delete from `Inbox/`.
 - **p** → **Post to Slack**: same flow as `/cu:review` — prompt for channel (default from `config/user-settings.yaml`), draft message, present for editing, send via `mcp__slack-mcp__send_slack_message`, then archive with reason "Posted to Slack #{channel}". Delete from `Inbox/`.
 - **a** → **Archive**: append an entry to `Archive/Archive.md` with title, URL, date, summary, questions asked during discussion, and reason (if provided). Then delete from `Inbox/`. Format:
   ```markdown

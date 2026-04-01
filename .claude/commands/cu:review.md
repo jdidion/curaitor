@@ -109,7 +109,7 @@ Topics: [[AI-Assisted Development]] (if any found)
 Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the menu as text and wait for the user to type their response:
 
 ```
-!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  p:post  a:archive  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  b:bookmark  r:zotero  p:post  a:archive  skip  q:quit
 ```
 
 Only include **c** if a repo or tool website was detected. Only include **t** if related topics were found or the article could start a new topic.
@@ -135,6 +135,7 @@ The user can type:
   - If repo detected: also star it and add to Tools catalog
   - Delete the article from `Review/` — it's now referenced from the topic, no need to keep separately
 - **c** → **Clip**: add repo/tool to `Tools & Projects.md`, star if GitHub, delete article from `Review/`.
+- **b** → **Bookmark**: save the link to `Bookmarks.md` in Obsidian vault root (see Bookmark format below), then delete from `Review/`. If `config/user-settings.yaml` has a custom `bookmark_command`, run that instead.
 - **r** → save to Zotero via API, move to `Inbox/`, add zotero_key to frontmatter
 - **p** → **Post to Slack** (see Post flow below), then archive the article.
 - **a** → **Archive**: the user has reviewed this and doesn't want to keep it. Append an entry to `Archive/Archive.md` in Obsidian (see Archive format below), then delete the article from `Review/`. NEVER move articles to `Ignored/` — that folder is only for triage-agent classifications.
@@ -170,6 +171,32 @@ The user can type:
 4. **Send**: Use `mcp__slack-mcp__send_slack_message` with the channel and final message text.
 
 5. **Archive**: After posting, append to `Archive/Archive.md` with `Reason archived: Posted to Slack #{channel}`, then delete from `Review/`.
+
+### Bookmark format
+
+`Bookmarks.md` in the Obsidian vault root. Organized hierarchically by category, similar to `Tools & Projects.md`. Each entry is one line:
+
+```markdown
+# Bookmarks
+
+## Genomics & Bioinformatics
+- [UPDhmm](http://doi.org/10.1093/bioinformatics/btag062) — HMM-based UPD detection from NGS trio data
+- [Strand-seq and personalized genomics](https://www.nature.com/articles/s41588-026-02548-4) — Nature Genetics perspective
+
+## AI & Development
+- [Harness design for long-running apps](https://www.anthropic.com/engineering/harness-design-long-running-apps) — Anthropic engineering post on agent harnesses
+
+## General
+- [Unbreaking Software](https://third-bit.com/unbreak/) — Debugging course by Greg Wilson
+```
+
+Read the existing `Bookmarks.md` via `mcp__obsidian__read_note`. If it doesn't exist, create it. Append the new entry under the appropriate category. If the category doesn't exist, create it.
+
+**Custom bookmark command**: If `config/user-settings.yaml` has `bookmark_command`, run that instead of writing to Obsidian. Example:
+```yaml
+# Save to Raindrop.io instead of Obsidian
+bookmark_command: "curl -s -X POST 'https://api.raindrop.io/rest/v1/raindrop' -H 'Authorization: Bearer $RAINDROP_TOKEN' -H 'Content-Type: application/json' -d '{\"link\": \"$URL\", \"title\": \"$TITLE\", \"tags\": $TAGS}'"
+```
 
 ### Archive format
 

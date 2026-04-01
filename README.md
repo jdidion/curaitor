@@ -53,6 +53,7 @@ curaitor learns your interests over time. Every time you give feedback during `/
 | `y` | Interested — move to Inbox. Star GitHub repo if detected. |
 | `t` | **Topic** — attach to an existing or new topic in Obsidian |
 | `c` | **Clip** — add repo/tool to Tools & Projects catalog, delete article |
+| `b` | **Bookmark** — save link to `Bookmarks.md` (or custom command), delete article |
 | `r` | Save to Zotero as reference |
 | `a` | **Archive** — reviewed, not keeping. Logged to `Archive/Archive.md` with audit trail. |
 | `skip` | Leave in Review for later |
@@ -67,6 +68,7 @@ Inline commands: `! compare to our pipeline`, `? does this support hg38?`, `t Va
 | `r` | Save to Zotero (papers), with discussion notes |
 | `t` | Attach to a topic |
 | `c` | Clip tool to Tools & Projects catalog |
+| `b` | Bookmark link to `Bookmarks.md` (or custom command) |
 | `a` | **Archive** — reviewed, not keeping. Logged with audit trail. |
 | `skip` | Leave in Inbox |
 | `q` | Quit |
@@ -356,6 +358,10 @@ curaitor/
 ```
 
 ## Roadmap
+
+### References
+
+* Stephen Turner's guide: https://blog.stephenturner.us/p/staying-current-in-data-science-and-computational-biology-2026
 
 ### Sources
 - **Bluesky & Mastodon** — surface articles shared by your network on the fediverse, potentially via [Sill](https://sill.social/) (aggregates links shared across Bluesky and Mastodon)
