@@ -8,8 +8,8 @@ $ARGUMENTS — Optional: number of articles to review (default: all), or "ignore
 ## Step 1: Load context
 
 1. Read `~/projects/curaitor/config/reading-prefs.md`
-2. List notes in `Review/` folder via `mcp__obsidian__list_directory`
-3. If $ARGUMENTS is "ignored", list `Ignored/` folder instead
+2. List notes in `Curaitor/Review/` folder via `mcp__obsidian__list_directory`
+3. If $ARGUMENTS is "ignored", list `Curaitor/Ignored/` folder instead
 
 If the queue is empty, tell the user and exit.
 
@@ -95,7 +95,7 @@ Repo: github.com/davidtarjan/pi-mono (if detected)
 Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the menu as text and wait for the user to type their response:
 
 ```
-!:deep-read  ?:discuss  y:inbox  c:clip  r:zotero  n:ignore  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  c:clip  r:zotero  a:recycle  skip  q:quit
 ```
 
 Only include **c** if a repo or tool website was detected.
@@ -110,11 +110,11 @@ The user can type:
 
 - **!** → **Deep read mode** (see below). If repo detected: star it and add to Tools catalog.
 - **?** → **Discussion mode**: fetch the full article text via WebFetch or `cmux browser snapshot`, then enter a conversational loop where the user asks questions and Claude answers from the article content. When the user is done asking questions (says "done", "ok", "next", or similar), re-present the verdict options so they can make a final decision.
-- **y** → move to `Inbox/`, update frontmatter. If repo detected: star it via `gh api user/starred/{owner}/{repo} -X PUT` and add to Tools catalog.
-- **c** → **Clip**: add the repo/tool to `Tools & Projects.md` in Obsidian (star the repo if GitHub), then move the article to `Ignored/` (the article itself isn't worth keeping, but the tool reference is). Do NOT save to Inbox or Zotero.
-- **r** → save to Zotero via API, move to `Inbox/`, add zotero_key to frontmatter
-- **n** → move to `Ignored/`, update frontmatter
-- **skip** → leave in `Review/`
+- **y** → move to `Curaitor/Inbox/`, update frontmatter. If repo detected: star it via `gh api user/starred/{owner}/{repo} -X PUT` and add to Tools catalog. **True positive**.
+- **c** → **Clip**: add the repo/tool to `Tools & Projects.md` in Obsidian (star the repo if GitHub), then delete the article from `Curaitor/Review/`. **True positive**.
+- **r** → save to Zotero via API, move to `Curaitor/Inbox/`, add zotero_key to frontmatter. **True positive**.
+- **a** → **Recycle**: not keeping. Append `- [title](url)` to `Curaitor/Recycle.md`, delete note from `Curaitor/Review/`. **False positive** — analyze why triage wrongly routed this to Review and update preferences.
+- **skip** → leave in `Curaitor/Review/`. **True positive**.
 - **q** → stop, show session summary
 
 ### f. Star GitHub repos (on y or !)
@@ -191,7 +191,7 @@ When the user types `!`, this means "I'm interested AND I want to read and discu
    - If saved to Zotero: add as a note on the Zotero entry via API
    - If saved to Obsidian Library/: append a `## Discussion Notes` section to the note with date
 
-5. **Update the Obsidian note** with final verdict and move from `Review/` to `Library/` or `Inbox/`
+5. **Update the Obsidian note** with final verdict and move from `Curaitor/Review/` to `Library/` or `Curaitor/Inbox/`
 
 ### f. Update preferences
 After each verdict, if the decision reveals a genuinely new preference pattern, append to `~/projects/curaitor/config/reading-prefs.md` under "## Learned patterns":
@@ -205,10 +205,10 @@ Only add patterns that are informative — don't log every decision.
 ```
 Review session complete:
   3 → Inbox
-  2 → Ignored
-  1 → Zotero
-  2 → Library (deep read)
-  10 remaining in Review queue
+  2 → Recycled (FP)
+  1 → Zotero (TP)
+  2 → Library (deep read, TP)
+  10 remaining in Curaitor/Review/
 
 Deep reads:
   "Article Title" — 3 discussion notes saved

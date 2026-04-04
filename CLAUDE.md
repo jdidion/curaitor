@@ -35,7 +35,7 @@ $CURAITOR_PYTHON scripts/instapaper.py archive ID [ID ...]
 $CURAITOR_PYTHON scripts/feeds.py [--days N] [--category CAT]
 
 # Batch write Obsidian notes (faster than individual MCP calls for >10 notes)
-echo '[{"path":"Inbox/title.md","frontmatter":{...},"content":"..."}]' | $CURAITOR_PYTHON scripts/write-notes.py
+echo '[{"path":"Curaitor/Inbox/title.md","frontmatter":{...},"content":"..."}]' | $CURAITOR_PYTHON scripts/write-notes.py
 
 # Workspace setup
 bash scripts/setup.sh [review|triage|both]
@@ -48,7 +48,7 @@ For interactive single-note operations, prefer `mcp__obsidian__write_note` (MCP)
 `config/triage-rules.yaml` contains deterministic routing rules that supplement LLM evaluation:
 - `inbox_domains`: articles from these domains go straight to Inbox
 - `inbox_title_keywords`: title keyword matches → Inbox
-- `ignored_title_patterns`: known junk patterns → Ignored
+- `ignored_title_patterns`: known junk patterns → Curaitor/Ignored
 - `source_weights`: Instapaper saves (hand-curated) get higher signal weight than RSS
 
 ## Credentials
@@ -88,16 +88,28 @@ session = OAuth1Session(
 Articles are stored as notes with structured frontmatter. Access via Obsidian MCP tools.
 
 ### Folders
-- **Inbox/** — high-confidence interesting, ready to read
-- **Review/** — uncertain, needs human review
-- **Ignored/** — triage agent thinks not interesting (machine classification, reviewable for false negatives)
-- **Archive/** — human-reviewed and dismissed, with audit trail in `Archive/Archive.md`
+All triage folders live under `Curaitor/` in the Obsidian vault:
+- **Curaitor/Inbox/** — high-confidence interesting, ready to read
+- **Curaitor/Review/** — uncertain, needs human review
+- **Curaitor/Ignored/** — triage agent thinks not interesting (machine classification, reviewable for false negatives)
+- **Curaitor/Recycle.md** — dismissed articles (simple unordered list of `- [title](url)` links)
+- **Curaitor/Archive/** — human-reviewed and dismissed during `/cu:read`, with audit trail in `Curaitor/Archive/Archive.md`
 - **Library/** — permanently saved articles from deep read sessions
 - **Topics/** — topic notes with linked articles
 
-### Ignored vs Archive
-- **Ignored/** is written ONLY by triage/discover agents (machine classification). The review agent reads from it (for `/cu:review-ignored`) and moves articles OUT, but NEVER adds to it.
-- **Archive/** is written ONLY by the review/read agents (human decision). Contains `Archive.md` with a running log of reviewed-and-dismissed articles including questions asked and reasons given.
+### Folder semantics and triage signals
+- **Curaitor/Ignored/** is written ONLY by triage/discover agents (machine classification). The review agent reads from it (for `/cu:review-ignored`) and moves articles OUT, but NEVER adds to it.
+- **Curaitor/Recycle.md** collects dismissed articles as a simple list of links. Articles arrive here from two paths:
+  - `/cu:review`: user dismisses an article from Review → **false positive** (triage was wrong to flag it as uncertain/interesting)
+  - `/cu:review-ignored`: user confirms an article was correctly ignored → **true negative** (triage was right)
+- **Curaitor/Archive/** is written ONLY by `/cu:read` (human decision after deep reading). Contains `Archive.md` with audit trail.
+
+### Triage quality signals
+Every human verdict during `/cu:review` and `/cu:review-ignored` provides a signal about triage quality:
+- **True positive**: article kept during review (y, !, t, c, b, r, p, skip) — triage was right to flag it for review
+- **False positive**: article recycled during review (a) — triage shouldn't have put this in Review. Agent analyzes WHY and updates preferences to decrease future false-positive rate.
+- **True negative** (via `/cu:review-ignored`): user confirms article was correctly ignored → reinforces correct triage behavior
+- **False negative** (via `/cu:review-ignored`): user rescues a wrongly-ignored article → agent analyzes WHY and updates preferences to decrease future false-negative rate.
 
 ### Note format
 ```markdown
@@ -106,7 +118,7 @@ title: "Article Title"
 url: https://...
 source: instapaper
 bookmark_id: 12345
-date_triaged: 2026-03-30
+date_triaged: 2026-04-04
 category: ai-tooling
 verdict: read-now
 tags: [ai, dev-tools]
@@ -119,14 +131,16 @@ tags: [ai, dev-tools]
 Why this is worth reading.
 ```
 
+Note paths use the `Curaitor/` prefix: `Curaitor/Inbox/{sanitized-title}.md`, etc.
+
 ## Three-tier confidence routing
 
 Read `config/reading-prefs.md` before every evaluation:
-- **High confidence interested** → Obsidian `Inbox/`
-- **Uncertain** → Obsidian `Review/`
-- **High confidence not interested** → Obsidian `Ignored/`
+- **High confidence interested** → Obsidian `Curaitor/Inbox/`
+- **Uncertain** → Obsidian `Curaitor/Review/`
+- **High confidence not interested** → Obsidian `Curaitor/Ignored/`
 
-In unattended mode (cron), NEVER prompt — uncertain always goes to `Review/`.
+In unattended mode (cron), NEVER prompt — uncertain always goes to `Curaitor/Review/`.
 
 ## CRITICAL: Do not use AskUserQuestion during review
 
@@ -139,7 +153,7 @@ NEVER use AskUserQuestion during `/cu:review` or `/cu:review-ignored`. It only s
 
 Menu (printed as text, not AskUserQuestion):
 ```
-!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  a:archive  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  a:recycle  skip  q:quit
 ```
 
 Users can type inline commands:
@@ -150,11 +164,11 @@ Users can type inline commands:
 ### Verdicts
 - **!** — Deep read: save permanently (papers→Zotero, others→Library/), fetch full text, interactive RAG discussion, save discussion notes when done
 - **?** — Discuss: fetch full text, answer questions, re-show menu when user says "done"
-- **y** — Inbox: move to Inbox/, star GitHub repo if detected, add to Tools & Projects catalog
+- **y** — Inbox: move to Curaitor/Inbox/, star GitHub repo if detected, add to Tools & Projects catalog
 - **c** — Clip: add repo/tool to Tools & Projects catalog, delete article (only shown when repo/tool detected)
 - **r** — Zotero: save as reference via Zotero API
-- **a** — Archive: reviewed, not keeping (logged to Archive/Archive.md with audit trail)
-- **skip** — Leave in Review/
+- **a** — Recycle: not keeping. Append `- [title](url)` to `Curaitor/Recycle.md`, delete the note. This is a **false positive** — analyze why triage routed this to Review and update preferences to decrease the false-positive rate.
+- **skip** — Leave in Curaitor/Review/
 - **q** — Quit, show session summary
 
 ### GitHub repo detection
@@ -243,8 +257,14 @@ When generating tags, first check what tags already exist in the vault by scanni
 
 `config/reading-prefs.md` contains natural language rules. After each review verdict, if the decision reveals a genuinely new pattern, append to `## Learned patterns`:
 ```
-- YYYY-MM-DD: User [interested in / not interested in] [pattern]. Example: "Title"
+- YYYY-MM-DD: [TP|FP|TN|FN] User [interested in / not interested in] [pattern]. Example: "Title". [analysis of why triage was right/wrong]
 ```
+Signal types:
+- **TP** (true positive): article kept during `/cu:review` — reinforce correct triage behavior
+- **FP** (false positive): article recycled during `/cu:review` — analyze and correct the over-inclusion pattern
+- **TN** (true negative): confirmed ignored during `/cu:review-ignored` — reinforce correct ignore behavior
+- **FN** (false negative): rescued during `/cu:review-ignored` — analyze and correct the over-exclusion pattern
+
 Only log informative patterns — not every decision.
 
 ## Zotero integration

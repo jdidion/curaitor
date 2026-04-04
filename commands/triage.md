@@ -100,9 +100,9 @@ Match against preferences in `reading-prefs.md` to determine confidence level.
 
 Use the Obsidian MCP to write notes. Route based on confidence:
 
-- **High confidence interested** → write to `Inbox/` folder
-- **Uncertain** → write to `Review/` folder
-- **High confidence not interested** → write to `Ignored/` folder
+- **High confidence interested** → write to `Curaitor/Inbox/` folder
+- **Uncertain** → write to `Curaitor/Review/` folder
+- **High confidence not interested** → write to `Curaitor/Ignored/` folder
 
 Note format:
 ```markdown
@@ -129,7 +129,7 @@ Why this is worth reading.
 - Bullet points
 ```
 
-Use the `mcp__obsidian__write_note` tool. The note path should be `{folder}/{sanitized-title}.md`.
+Use the `mcp__obsidian__write_note` tool. The note path should be `Curaitor/{folder}/{sanitized-title}.md`.
 
 ## Step 5: Archive in Instapaper
 

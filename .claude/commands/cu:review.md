@@ -8,8 +8,8 @@ $ARGUMENTS — Optional: number of articles to review (default: all), or "ignore
 ## Step 1: Load context
 
 1. Read `~/projects/curaitor/config/reading-prefs.md`
-2. List notes in `Review/` folder via `mcp__obsidian__list_directory`
-3. If $ARGUMENTS is "ignored", list `Ignored/` folder instead
+2. List notes in `Curaitor/Review/` folder via `mcp__obsidian__list_directory`
+3. If $ARGUMENTS is "ignored", list `Curaitor/Ignored/` folder instead
 
 If the queue is empty, tell the user and exit.
 
@@ -109,7 +109,7 @@ Topics: [[AI-Assisted Development]] (if any found)
 Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the menu as text and wait for the user to type their response:
 
 ```
-!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  b:bookmark  r:zotero  p:post  a:archive  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  b:bookmark  r:zotero  p:post  a:recycle  skip  q:quit
 ```
 
 Only include **c** if a repo or tool website was detected. Only include **t** if related topics were found or the article could start a new topic.
@@ -126,20 +126,21 @@ The user can type:
 
 - **!** → **Deep read mode** (see below). If repo detected: star it and add to Tools catalog.
 - **?** → **Discussion mode**: fetch full article text, conversational Q&A loop, re-present verdict when user says "done".
-- **y** → move to `Inbox/`, update frontmatter with tags. If repo detected: star it and add to Tools catalog.
-- **t** → **Topic mode**: attach article to a topic, then delete from Review/ (article lives under the topic, not separately):
+- **y** → move to `Curaitor/Inbox/`, update frontmatter with tags. If repo detected: star it and add to Tools catalog. **True positive** — triage was right to flag this for review.
+- **t** → **Topic mode**: attach article to a topic, then delete from Curaitor/Review/ (article lives under the topic, not separately):
   - If user typed `t` alone and related topics were found: list them, ask which one (or "new")
   - If user typed `t <topic name>`: use that topic (create in `Topics/` if new)
   - Add article as a `[[wiki-link]]` under `## Related Articles` in the topic note
   - Add article URL, title, and summary as a sub-entry in the topic note
   - If repo detected: also star it and add to Tools catalog
-  - Delete the article from `Review/` — it's now referenced from the topic, no need to keep separately
-- **c** → **Clip**: add repo/tool to `Tools & Projects.md`, star if GitHub, delete article from `Review/`.
-- **b** → **Bookmark**: save the link to `Bookmarks.md` in Obsidian vault root (see Bookmark format below), then delete from `Review/`. If `config/user-settings.yaml` has a custom `bookmark_command`, run that instead.
-- **r** → save to Zotero via API, move to `Inbox/`, add zotero_key to frontmatter
-- **p** → **Post to Slack** (see Post flow below), then archive the article.
-- **a** → **Archive**: the user has reviewed this and doesn't want to keep it. Append an entry to `Archive/Archive.md` in Obsidian (see Archive format below), then delete the article from `Review/`. NEVER move articles to `Ignored/` — that folder is only for triage-agent classifications.
-- **skip** → leave in `Review/`
+  - Delete the article from `Curaitor/Review/` — it's now referenced from the topic, no need to keep separately
+  - **True positive** — triage was right.
+- **c** → **Clip**: add repo/tool to `Tools & Projects.md`, star if GitHub, delete article from `Curaitor/Review/`. **True positive**.
+- **b** → **Bookmark**: save the link to `Bookmarks.md` in Obsidian vault root (see Bookmark format below), then delete from `Curaitor/Review/`. If `config/user-settings.yaml` has a custom `bookmark_command`, run that instead. **True positive**.
+- **r** → save to Zotero via API, move to `Curaitor/Inbox/`, add zotero_key to frontmatter. **True positive**.
+- **p** → **Post to Slack** (see Post flow below), then recycle the article. **True positive**.
+- **a** → **Recycle**: the user has reviewed this and doesn't want to keep it. This is a **false positive** — triage was wrong to put this in Review. Append `- [title](url)` to `Curaitor/Recycle.md`, then delete the article note from `Curaitor/Review/`. Analyze WHY the article was wrongly included in Review (what triage signal was misleading?) and update `config/reading-prefs.md` to decrease the future false-positive rate. NEVER move articles to `Curaitor/Ignored/` — that folder is only for triage-agent classifications.
+- **skip** → leave in `Curaitor/Review/`. **True positive** (the user isn't dismissing it, so triage was right to flag it).
 - **q** → stop, show session summary
 
 ### Post to Slack flow (p)
@@ -170,7 +171,7 @@ The user can type:
 
 4. **Send**: Use `mcp__slack-mcp__send_slack_message` with the channel and final message text.
 
-5. **Archive**: After posting, append to `Archive/Archive.md` with `Reason archived: Posted to Slack #{channel}`, then delete from `Review/`.
+5. **Recycle**: After posting, append `- [title](url)` to `Curaitor/Recycle.md`, then delete from `Curaitor/Review/`.
 
 ### Bookmark format
 
@@ -198,21 +199,17 @@ Read the existing `Bookmarks.md` via `mcp__obsidian__read_note`. If it doesn't e
 bookmark_command: "curl -s -X POST 'https://api.raindrop.io/rest/v1/raindrop' -H 'Authorization: Bearer $RAINDROP_TOKEN' -H 'Content-Type: application/json' -d '{\"link\": \"$URL\", \"title\": \"$TITLE\", \"tags\": $TAGS}'"
 ```
 
-### Archive format
+### Recycle format
 
-`Archive/Archive.md` is a running log of reviewed-and-dismissed articles. Append each archived article as:
+`Curaitor/Recycle.md` is a simple unordered list of dismissed article links. Append each recycled article as:
 
 ```markdown
-### {title}
-- **URL**: {url}
-- **Date reviewed**: {YYYY-MM-DD}
-- **Category**: {category}
-- **Summary**: {1-2 sentence summary}
-- **Questions asked**: {list any questions the user asked during ? or ! mode, or "none"}
-- **Reason archived**: {user's reason if provided, otherwise "Reviewed — not keeping"}
+- [Article Title](https://url)
 ```
 
-The review agent should NEVER add articles to `Ignored/`. Only the triage agent (`/cu:triage`, `/cu:discover`) writes to `Ignored/`. The review agent only reads from `Ignored/` (for `/cu:review-ignored`) and moves articles OUT of it.
+No audit trail, no metadata — just the link for potential future reference.
+
+The review agent should NEVER add articles to `Curaitor/Ignored/`. Only the triage agent (`/cu:triage`, `/cu:discover`) writes to `Curaitor/Ignored/`. The review agent only reads from `Curaitor/Ignored/` (for `/cu:review-ignored`) and moves articles OUT of it.
 
 ### f. Star GitHub repos (on y or !)
 
@@ -288,24 +285,25 @@ When the user types `!`, this means "I'm interested AND I want to read and discu
    - If saved to Zotero: add as a note on the Zotero entry via API
    - If saved to Obsidian Library/: append a `## Discussion Notes` section to the note with date
 
-5. **Update the Obsidian note** with final verdict and move from `Review/` to `Library/` or `Inbox/`
+5. **Update the Obsidian note** with final verdict and move from `Curaitor/Review/` to `Library/` or `Curaitor/Inbox/`
 
 ### f. Update preferences
 After each verdict, if the decision reveals a genuinely new preference pattern, append to `~/projects/curaitor/config/reading-prefs.md` under "## Learned patterns":
 ```
-- YYYY-MM-DD: User [interested in / not interested in] [pattern]. Example: "Article Title"
+- YYYY-MM-DD: [TP|FP] User [interested in / not interested in] [pattern]. Example: "Article Title". [analysis of triage accuracy]
 ```
-Only add patterns that are informative — don't log every decision.
+For **false positives** (a verdict), always log with analysis of why triage was wrong and what rule should change.
+For **true positives**, only log if the pattern is genuinely new and informative.
 
 ## Step 5: Session summary
 
 ```
 Review session complete:
-  3 → Inbox
-  2 → Ignored
-  1 → Zotero
-  2 → Library (deep read)
-  10 remaining in Review queue
+  3 → Inbox (TP)
+  2 → Recycled (FP)
+  1 → Zotero (TP)
+  2 → Library (deep read, TP)
+  10 remaining in Curaitor/Review/
 
 Deep reads:
   "Article Title" — 3 discussion notes saved

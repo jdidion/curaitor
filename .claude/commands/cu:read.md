@@ -8,7 +8,7 @@ $ARGUMENTS — Optional: number of articles to read (default: all in Inbox), or 
 ## Step 1: Load context
 
 1. Read `config/reading-prefs.md`
-2. List notes in `Inbox/` folder via `mcp__obsidian__list_directory`
+2. List notes in `Curaitor/Inbox/` folder via `mcp__obsidian__list_directory`
 
 If Inbox is empty, tell the user and exit.
 
@@ -103,19 +103,19 @@ The user can type:
 - **t** or **t Topic Name** — Attach to a topic (existing or new), remove from Inbox
 - **c** — Clip: star GitHub repo + add to Tools & Projects catalog, remove from Inbox (for tools/libraries)
 - **p** — Post to Slack, then archive (same flow as `/cu:review` post — prompt for channel, draft message, send)
-- **a** or **a reason** — Archive: reviewed and not keeping. Logs to `Archive/Archive.md` with audit trail.
+- **a** or **a reason** — Archive: reviewed and not keeping. Logs to `Curaitor/Archive/Archive.md` with audit trail.
 - **skip** — Leave in Inbox, move to next article
 - **q** — Quit, show session summary
 - Any other text — continue the discussion
 
 ### h. Handle verdict
 
-- **r** → Save to Zotero via API. Add discussion notes as a Zotero note attachment. Delete from Obsidian `Inbox/`.
-- **t** → Attach to topic (same flow as `/cu:review` topic mode). Add article summary + discussion notes under the topic. Delete from `Inbox/`.
-- **c** → Star GitHub repo (`gh api user/starred/OWNER/REPO -X PUT`), add to `Tools & Projects.md`, delete from `Inbox/`.
-- **b** → **Bookmark**: save the link to `Bookmarks.md` in Obsidian vault root (organized by category, same format as Tools & Projects). If `config/user-settings.yaml` has `bookmark_command`, run that instead. Delete from `Inbox/`.
-- **p** → **Post to Slack**: same flow as `/cu:review` — prompt for channel (default from `config/user-settings.yaml`), draft message, present for editing, send via `mcp__slack-mcp__send_slack_message`, then archive with reason "Posted to Slack #{channel}". Delete from `Inbox/`.
-- **a** → **Archive**: append an entry to `Archive/Archive.md` with title, URL, date, summary, questions asked during discussion, and reason (if provided). Then delete from `Inbox/`. Format:
+- **r** → Save to Zotero via API. Add discussion notes as a Zotero note attachment. Delete from Obsidian `Curaitor/Inbox/`.
+- **t** → Attach to topic (same flow as `/cu:review` topic mode). Add article summary + discussion notes under the topic. Delete from `Curaitor/Inbox/`.
+- **c** → Star GitHub repo (`gh api user/starred/OWNER/REPO -X PUT`), add to `Tools & Projects.md`, delete from `Curaitor/Inbox/`.
+- **b** → **Bookmark**: save the link to `Bookmarks.md` in Obsidian vault root (organized by category, same format as Tools & Projects). If `config/user-settings.yaml` has `bookmark_command`, run that instead. Delete from `Curaitor/Inbox/`.
+- **p** → **Post to Slack**: same flow as `/cu:review` — prompt for channel (default from `config/user-settings.yaml`), draft message, present for editing, send via `mcp__slack-mcp__send_slack_message`, then archive with reason "Posted to Slack #{channel}". Delete from `Curaitor/Inbox/`.
+- **a** → **Archive**: append an entry to `Curaitor/Archive/Archive.md` with title, URL, date, summary, questions asked during discussion, and reason (if provided). Then delete from `Curaitor/Inbox/`. Format:
   ```markdown
   ### {title}
   - **URL**: {url}
@@ -125,7 +125,7 @@ The user can type:
   - **Questions asked**: {list from discussion, or "none"}
   - **Reason archived**: {user's reason if provided, otherwise "Reviewed — not keeping"}
   ```
-- **skip** → Leave in `Inbox/`, move to next article.
+- **skip** → Leave in `Curaitor/Inbox/`, move to next article.
 - **q** → Stop, show session summary.
 
 ### i. Save discussion notes

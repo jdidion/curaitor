@@ -39,9 +39,9 @@ For each new article, evaluate against `reading-prefs.md`:
 ## Step 5: Route to Obsidian
 
 Same three-tier routing as `/triage`:
-- **High confidence interested** → Obsidian `Inbox/`
-- **Uncertain** → Obsidian `Review/`
-- **High confidence not interested** → Obsidian `Ignored/`
+- **High confidence interested** → Obsidian `Curaitor/Inbox/`
+- **Uncertain** → Obsidian `Curaitor/Review/`
+- **High confidence not interested** → Obsidian `Curaitor/Ignored/`
 
 Note format same as `/triage`, but `source: rss` and include `feed_name` in frontmatter.
 
