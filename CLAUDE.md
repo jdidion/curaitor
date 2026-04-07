@@ -107,7 +107,7 @@ All triage folders live under `Curaitor/` in the Obsidian vault:
 ### Triage quality signals
 Every human verdict during `/cu:review` and `/cu:review-ignored` provides a signal about triage quality:
 - **True positive**: article kept during review (y, !, t, c, b, r, p, skip) — triage was right to flag it for review
-- **False positive**: article recycled during review (a) — triage shouldn't have put this in Review. Agent analyzes WHY and updates preferences to decrease future false-positive rate.
+- **False positive**: article recycled during review (n) — triage shouldn't have put this in Review. Agent analyzes WHY and updates preferences to decrease future false-positive rate.
 - **True negative** (via `/cu:review-ignored`): user confirms article was correctly ignored → reinforces correct triage behavior
 - **False negative** (via `/cu:review-ignored`): user rescues a wrongly-ignored article → agent analyzes WHY and updates preferences to decrease future false-negative rate.
 
@@ -153,7 +153,7 @@ NEVER use AskUserQuestion during `/cu:review` or `/cu:review-ignored`. It only s
 
 Menu (printed as text, not AskUserQuestion):
 ```
-!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  a:recycle  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  n:recycle  skip  q:quit
 ```
 
 Users can type inline commands:
@@ -167,7 +167,7 @@ Users can type inline commands:
 - **y** — Inbox: move to Curaitor/Inbox/, star GitHub repo if detected, add to Tools & Projects catalog
 - **c** — Clip: add repo/tool to Tools & Projects catalog, delete article (only shown when repo/tool detected)
 - **r** — Zotero: save as reference via Zotero API
-- **a** — Recycle: not keeping. Append `- [title](url)` to `Curaitor/Recycle.md`, delete the note. This is a **false positive** — analyze why triage routed this to Review and update preferences to decrease the false-positive rate.
+- **n** — Recycle: not keeping. Append `- [title](url)` to `Curaitor/Recycle.md`, delete the note. This is a **false positive** — analyze why triage routed this to Review and update preferences to decrease the false-positive rate.
 - **skip** — Leave in Curaitor/Review/
 - **q** — Quit, show session summary
 

@@ -98,7 +98,7 @@ Repo: github.com/davidtarjan/pi-mono (if detected)
 Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the menu as text and wait for the user to type their response:
 
 ```
-!:deep-read  ?:discuss  y:inbox  c:clip  r:zotero  a:recycle  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  c:clip  r:zotero  n:recycle  skip  q:quit
 ```
 
 Only include **c** if a repo or tool website was detected.
@@ -116,7 +116,7 @@ The user can type:
 - **y** → move to `Curaitor/Inbox/`, update frontmatter. If repo detected: star it via `gh api user/starred/{owner}/{repo} -X PUT` and add to Tools catalog. **True positive**.
 - **c** → **Clip**: add the repo/tool to `Tools & Projects.md` in Obsidian (star the repo if GitHub), then delete the article from `Curaitor/Review/`. **True positive**.
 - **r** → save to Zotero via API, move to `Curaitor/Inbox/`, add zotero_key to frontmatter. **True positive**.
-- **a** → **Recycle**: not keeping. Append `- [title](url)` to `Curaitor/Recycle.md`, delete note from `Curaitor/Review/`. **False positive** — analyze why triage wrongly routed this to Review and update preferences.
+- **n** → **Recycle**: not keeping. Append `- [title](url)` to `Curaitor/Recycle.md`, delete note from `Curaitor/Review/`. **False positive** — analyze why triage wrongly routed this to Review and update preferences.
 - **skip** → leave in `Curaitor/Review/`. **True positive**.
 - **q** → stop, show session summary
 

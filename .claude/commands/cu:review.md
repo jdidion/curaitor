@@ -112,17 +112,17 @@ Topics: [[AI-Assisted Development]] (if any found)
 Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the menu as text and wait for the user to type their response:
 
 ```
-!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  b:bookmark  r:zotero  p:post  a:recycle  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  b:bookmark  r:zotero  p:post  n:recycle  skip  q:quit
 ```
 
 Only include **c** if a repo or tool website was detected. Only include **t** if related topics were found or the article could start a new topic.
 
 The user can type:
-- A bare key: `y`, `a`, `c`, `r`, `t`, `skip`, `q`
+- A bare key: `y`, `n`, `c`, `r`, `t`, `skip`, `q`
 - **`! <comment>`** — deep read with initial context
 - **`? <question>`** — ask a question before deciding
 - **`t <topic name>`** — attach to existing topic or create new one
-- **`a <reason>`** — archive with a reason (e.g., `a not relevant to current work`)
+- **`n <reason>`** — recycle with a reason (e.g., `n not relevant to current work`)
 - Any other free text — treated as a question, answer it, re-show menu
 
 ### g. Handle verdict
@@ -142,7 +142,7 @@ The user can type:
 - **b** → **Bookmark**: save the link to `Bookmarks.md` in Obsidian vault root (see Bookmark format below), then delete from `Curaitor/Review/`. If `config/user-settings.yaml` has a custom `bookmark_command`, run that instead. **True positive**.
 - **r** → save to Zotero via API, move to `Curaitor/Inbox/`, add zotero_key to frontmatter. **True positive**.
 - **p** → **Post to Slack** (see Post flow below), then recycle the article. **True positive**.
-- **a** → **Recycle**: the user has reviewed this and doesn't want to keep it. This is a **false positive** — triage was wrong to put this in Review. Append `- [title](url)` to `Curaitor/Recycle.md`, then delete the article note from `Curaitor/Review/`. Analyze WHY the article was wrongly included in Review (what triage signal was misleading?) and update `config/reading-prefs.md` to decrease the future false-positive rate. NEVER move articles to `Curaitor/Ignored/` — that folder is only for triage-agent classifications.
+- **n** → **Recycle**: the user has reviewed this and doesn't want to keep it. This is a **false positive** — triage was wrong to put this in Review. Append `- [title](url)` to `Curaitor/Recycle.md`, then delete the article note from `Curaitor/Review/`. Analyze WHY the article was wrongly included in Review (what triage signal was misleading?) and update `config/reading-prefs.md` to decrease the future false-positive rate. NEVER move articles to `Curaitor/Ignored/` — that folder is only for triage-agent classifications.
 - **skip** → leave in `Curaitor/Review/`. **True positive** (the user isn't dismissing it, so triage was right to flag it).
 - **q** → stop, show session summary
 
