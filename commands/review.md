@@ -87,6 +87,9 @@ Repo: github.com/davidtarjan/pi-mono (if detected)
 ## Why review?
 (from the Obsidian note)
 
+## My suggestion
+(one sentence: what Claude would do with this article and why, e.g. "Recycle — this is a product announcement with no technical depth" or "Inbox — novel method directly applicable to your cfDNA work")
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

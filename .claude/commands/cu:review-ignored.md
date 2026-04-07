@@ -42,8 +42,11 @@ Ignored articles (last 30 days): 42 total, 6 categories
 ━━ Potentially interesting — flagged for review (3) ━━
   These didn't clearly fit an ignore pattern:
    1. "Novel statistical framework for somatic CNV detection" — tagged incremental but uses new method
+      → My suggestion: Rescue — novel method, not just a benchmark
    2. "Building AI agents with persistent memory" — tagged non-applicable but relevant to dev tooling
+      → My suggestion: Rescue — directly relevant to your AI agent work
    3. "cfDNA fragmentomics for early cancer detection" — tagged news but has methods section
+      → My suggestion: Rescue — has real methods, cfDNA is a core interest
 
 Dismiss entire categories or rescue specific articles.
 Examples: "all good", "rescue 1,3 from flagged", "show me the benchmarks list"
