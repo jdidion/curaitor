@@ -115,7 +115,9 @@ Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print th
 !:deep-read  ?:discuss  y:inbox  t:topic  c:clip  b:bookmark  r:zotero  p:post  n:recycle  skip  q:quit
 ```
 
-Only include **c** if a repo or tool website was detected. Only include **t** if related topics were found or the article could start a new topic.
+Only include **c** if a repo or tool website was detected.
+
+**Topic suggestion**: When displaying the menu, always try to replace the generic `t:topic` with a specific suggestion like `t:Variant Calling Methods` or `t:AI Agent Architecture`. Infer the best topic from the article's tags, content, and any matching existing topics found in Step 4d. If multiple topics fit, pick the strongest match. Only fall back to bare `t:topic` if no reasonable topic can be inferred.
 
 The user can type:
 - A bare key: `y`, `n`, `c`, `r`, `t`, `skip`, `q`

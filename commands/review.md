@@ -103,6 +103,8 @@ Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print th
 
 Only include **c** if a repo or tool website was detected.
 
+**Topic suggestion**: Always try to replace `t:topic` with a specific suggestion like `t:Variant Calling Methods` based on the article's tags, content, and any matching existing topics. Only fall back to bare `t:topic` if no reasonable topic can be inferred.
+
 The user can type:
 - A bare key: `y`, `n`, `s`, `c`, `skip`, `q`
 - **`! <comment>`** — deep read with an initial note/context (e.g., `! compare this to our current approach`)
