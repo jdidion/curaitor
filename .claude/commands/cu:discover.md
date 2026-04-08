@@ -59,6 +59,16 @@ Top picks:
 ...
 ```
 
+## Step 7: Mark as read in Feedly
+
+After writing Obsidian notes, mark the discovered articles as read in Feedly so they don't appear as unread in the Feedly UI. Collect all URLs that were just written to Obsidian into a temp file, then run:
+
+```bash
+python3 scripts/feedly.py mark-read "user/5ebf728d-08d4-4438-a616-2dc84ee1af7b/category/Science - old" --urls-file /tmp/curaitor-discovered-urls.txt
+```
+
+Only run this if `FEEDLY_TOKEN` is set in `.env`. If the token is expired, skip silently and note it in the summary.
+
 ## Rules
 - Only evaluate based on RSS title/description/abstract — don't WebFetch full articles (too slow for many feeds)
 - Always read `reading-prefs.md` first

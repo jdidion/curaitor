@@ -98,7 +98,7 @@ Repo: github.com/davidtarjan/pi-mono (if detected)
 Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the menu as text and wait for the user to type their response:
 
 ```
-!:deep-read  ?:discuss  y:inbox  c:clip  r:zotero  n:recycle  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  b:bookmark  r:zotero  p:post  n:recycle  skip  q:quit
 ```
 
 Only include **c** if a repo or tool website was detected.

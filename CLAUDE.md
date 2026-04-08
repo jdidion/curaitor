@@ -153,7 +153,7 @@ NEVER use AskUserQuestion during `/cu:review` or `/cu:review-ignored`. It only s
 
 Menu (printed as text, not AskUserQuestion):
 ```
-!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  r:zotero  n:recycle  skip  q:quit
+!:deep-read  ?:discuss  y:inbox  t:topic  c:clip  b:bookmark  r:zotero  p:post  n:recycle  skip  q:quit
 ```
 
 Users can type inline commands:
@@ -287,6 +287,22 @@ Paper detection: DOI URLs, bioRxiv, arXiv, nature.com/articles, academic.oup.com
 ## Feeds
 
 `config/feeds.yaml` lists RSS feeds for `/cu:discover`. Add/remove by editing the file.
+
+## Feedly integration
+
+After `/cu:discover` processes RSS articles, mark them as read in Feedly so they don't pile up as unread.
+
+Helper script:
+```bash
+python3 scripts/feedly.py profile                         # test auth
+python3 scripts/feedly.py list STREAM_ID [--unread-only]  # list entries
+python3 scripts/feedly.py mark-read STREAM_ID --urls-file FILE
+python3 scripts/feedly.py mark-read STREAM_ID --urls URL1 URL2
+```
+
+Stream ID for Science feeds: `user/5ebf728d-08d4-4438-a616-2dc84ee1af7b/category/Science - old`
+
+Auth: `FEEDLY_TOKEN` in `.env`. Token is a JWT from Feedly's web session (`localStorage['feedly.session']`). To refresh: log into Feedly in cmux browser, then extract via `cmux browser eval "JSON.parse(localStorage.getItem('feedly.session')).feedlyToken"`.
 
 ## Scheduling (unattended)
 
