@@ -263,7 +263,7 @@ When the user types `!`, this means "I'm interested AND I want to read and discu
    - If it's a blog/tool/LinkedIn post: move to `Library/` folder in Obsidian (create if needed)
 
 2. **Fetch full content:**
-   - WebFetch the full article text
+   - For PDF URLs (papers): use `read_pdf` MCP tool if available (extracts text + images/figures). Otherwise WebFetch.
    - For papers: fetch abstract + full text if accessible
    - For GitHub repos: read the README
    - For LinkedIn posts: use cmux browser snapshot to get full DOM content

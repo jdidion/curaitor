@@ -284,6 +284,12 @@ python scripts/zotero.py search QUERY
 
 Paper detection: DOI URLs, bioRxiv, arXiv, nature.com/articles, academic.oup.com, springer.com. Non-papers only saved to Zotero on explicit `r` verdict.
 
+## PDF reading
+
+When the `pdf-reader` MCP server is available (globally installed), use `read_pdf` for fetching full content from PDF-format papers. This extracts text AND images (figures, tables), which is critical for scientific papers where figures carry key information.
+
+Usage: check if `read_pdf` tool is available. If so, prefer it over WebFetch for PDF URLs (DOI, bioRxiv, arXiv, nature.com, academic.oup.com). If not available, fall back to WebFetch or cmux browser snapshot.
+
 ## Feeds
 
 `config/feeds.yaml` lists RSS feeds for `/cu:discover`. Add/remove by editing the file.

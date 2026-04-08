@@ -40,7 +40,7 @@ cmux browser wait --load-state complete --surface surface:NN --timeout-ms 5000
 
 ### c. Fetch full content
 Get the complete article text for RAG discussion:
-- **Papers (DOI, bioRxiv, arXiv, nature.com):** WebFetch the full text. If paywalled, use `cmux browser snapshot --compact` to get what's visible.
+- **Papers (DOI, bioRxiv, arXiv, nature.com):** If the `read_pdf` MCP tool is available, use it for PDF URLs — it extracts text AND images (figures, tables). Otherwise WebFetch the full text. If paywalled, use `cmux browser snapshot --compact` to get what's visible.
 - **GitHub repos:** `gh api repos/OWNER/REPO --jq '.description'` + WebFetch the README
 - **Blog posts / LinkedIn:** WebFetch or `cmux browser snapshot --compact`
 
