@@ -140,15 +140,15 @@ Topics: [[AI-Assisted Development]] (if any found)
 
 ### f. Ask for verdict
 
-Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the menu as text and wait for the user to type their response:
+Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the FULL menu as text and wait for the user to type their response.
+
+**CRITICAL: Always print ALL menu items.** Never abbreviate or truncate the menu. The only conditional item is `c` (only shown when a repo/tool is detected). Every other item MUST always appear:
 
 ```
 !:deep-read  ?:discuss  y:inbox  t:topic  c:clip  b:bookmark  r:zotero  p:post  n:recycle  skip  q:quit
 ```
 
-Only include **c** if a repo or tool website was detected.
-
-**Topic suggestion**: When displaying the menu, always try to replace the generic `t:topic` with a specific suggestion like `t:Variant Calling Methods` or `t:AI Agent Architecture`. Infer the best topic from the article's tags, content, and any matching existing topics found in Step 4d. If multiple topics fit, pick the strongest match. Only fall back to bare `t:topic` if no reasonable topic can be inferred.
+**Topic suggestion**: Replace `t:topic` with a specific suggestion like `t:Variant Calling Methods` whenever possible. Infer from the article's tags, content, and matching existing topics. Only fall back to bare `t:topic` if no reasonable topic can be inferred.
 
 The user can type:
 - A bare key: `y`, `n`, `c`, `r`, `t`, `skip`, `q`

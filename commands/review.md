@@ -109,9 +109,9 @@ Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print th
 !:deep-read  ?:discuss  y:inbox  t:topic  c:clip  b:bookmark  r:zotero  p:post  n:recycle  skip  q:quit
 ```
 
-Only include **c** if a repo or tool website was detected.
+**CRITICAL: Always print ALL menu items.** Never abbreviate or truncate the menu. The only conditional item is `c` (only shown when a repo/tool is detected). Every other item MUST always appear.
 
-**Topic suggestion**: Always try to replace `t:topic` with a specific suggestion like `t:Variant Calling Methods` based on the article's tags, content, and any matching existing topics. Only fall back to bare `t:topic` if no reasonable topic can be inferred.
+**Topic suggestion**: Replace `t:topic` with a specific suggestion like `t:Variant Calling Methods` whenever possible. Only fall back to bare `t:topic` if no reasonable topic can be inferred.
 
 The user can type:
 - A bare key: `y`, `n`, `s`, `c`, `skip`, `q`
