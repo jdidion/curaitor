@@ -44,12 +44,43 @@ Review queue: 18 articles
 Starting with #1.
 ```
 
+## Step 3.5: Pre-fetch pipeline (script + parallel sub-agents)
+
+**Purpose**: Eliminate wait time between articles by pre-computing data in the background. Two layers:
+
+### Layer 1: Script pre-fetch (zero tokens)
+
+Run the pre-fetch script to read all notes, parse frontmatter, detect repos, and collect vault metadata:
+
+```bash
+python3 ~/projects/curaitor/scripts/prefetch-review.py review --include-meta
+```
+
+This returns JSON with all articles including: title, URL, source, category, tags, repo detection, summary, "why review?" text, plus vault-wide tags and topics. Store this in working memory — it replaces steps b-e for most articles.
+
+### Layer 2: Parallel sub-agents for LLM reasoning (10 at a time)
+
+Using the pre-fetched data, spawn **up to 10 parallel sub-agents** (via the Agent tool with `run_in_background: true`) to generate the LLM-only parts for the first 10 articles. Each sub-agent receives the pre-fetched article data and:
+
+1. Generates/refines semantic tags (using vault_tags for consistency)
+2. Matches the best existing topic (from the topics list) or suggests a new one
+3. Writes the "My suggestion" line (one sentence: verdict + reasoning)
+4. Composes the full assessment block ready to print
+
+**Sliding window**: After the user gives a verdict on article N, if article N+10 hasn't been pre-processed yet, spawn a new background agent for it.
+
+**Fallback**: If a sub-agent hasn't finished when the user reaches that article, generate inline using the script pre-fetch data (which is always available).
+
 ## Step 4: For each article
 
-### a. Read the Obsidian note
+### a. Check for pre-fetched summary
+
+If a pre-fetched summary is available for this article, skip steps b-e and go straight to presenting it (step f). Otherwise, compute inline:
+
+### b. Read the Obsidian note
 Use `mcp__obsidian__read_note` to get the full note including frontmatter.
 
-### b. Detect GitHub/GitLab repos
+### c. Detect GitHub/GitLab repos
 
 Before opening, check if the article URL or title contains a GitHub/GitLab repo link:
 - URL matches `github.com/{owner}/{repo}` or `gitlab.com/{owner}/{repo}`
@@ -65,7 +96,7 @@ If a repo is detected, extract the `owner/repo` and note it. When presenting the
 
 Default to the repo URL for GitHub/GitLab-linked articles.
 
-### c. Open in cmux browser
+### d. Open in cmux browser
 ```bash
 cmux browser open "ARTICLE_URL"  # or REPO_URL if user chose [r]
 # or if reusing existing surface:
@@ -73,7 +104,7 @@ cmux browser goto "URL" --surface surface:NN
 cmux browser wait --load-state complete --surface surface:NN --timeout-ms 5000
 ```
 
-### d. Auto-tag and search for related topics
+### e. Auto-tag and search for related topics
 
 Generate 3-8 semantic tags from the article content:
 - Lowercase, hyphenated (e.g., `variant-calling`, `ai-agents`, `cfDNA`)
@@ -85,7 +116,7 @@ Then search Obsidian for matching topic notes:
 2. Check `Topics/` folder for notes with matching tags
 3. Note any matches for display
 
-### e. Present Claude's assessment
+### f. Present Claude's assessment
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Article 1/18: "Optimize LLM Efficiency with Sequencing Tool"

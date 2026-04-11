@@ -8,9 +8,11 @@ $ARGUMENTS — Optional: number of days to look back (default 30).
 ## Step 1: Load and read all notes
 
 1. Read `config/reading-prefs.md` from `~/projects/curaitor/`
-2. List notes in `Curaitor/Ignored/` folder via `mcp__obsidian__list_directory`
-3. Filter to notes within the lookback period (from frontmatter `date_triaged`)
-4. Batch-read all matching notes (use `mcp__obsidian__read_multiple_notes`)
+2. Run the pre-fetch script to read all notes, parse frontmatter, and detect repos (zero tokens):
+   ```bash
+   python3 ~/projects/curaitor/scripts/prefetch-review.py ignored --days $DAYS --include-meta
+   ```
+   This returns JSON with all articles, vault tags, and topics. Use this data for grouping instead of individual MCP calls.
 
 ## Step 2: Group by ignore reason and present batches
 

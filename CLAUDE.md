@@ -37,6 +37,11 @@ $CURAITOR_PYTHON scripts/feeds.py [--days N] [--category CAT]
 # Batch write Obsidian notes (faster than individual MCP calls for >10 notes)
 echo '[{"path":"Curaitor/Inbox/title.md","frontmatter":{...},"content":"..."}]' | $CURAITOR_PYTHON scripts/write-notes.py
 
+# Pre-fetch article data for review (zero tokens — reads vault directly)
+python3 scripts/prefetch-review.py review --include-meta    # Review queue
+python3 scripts/prefetch-review.py ignored --days 30 --include-meta  # Ignored
+python3 scripts/prefetch-review.py inbox --include-meta     # Inbox
+
 # Workspace setup
 bash scripts/setup.sh [review|triage|both]
 ```

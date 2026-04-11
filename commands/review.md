@@ -44,10 +44,18 @@ Review queue: 18 articles
 Starting with #1.
 ```
 
+## Step 3.5: Pre-fetch pipeline
+
+Run the pre-fetch script to read all notes at zero token cost:
+```bash
+python3 ~/projects/curaitor/scripts/prefetch-review.py review --include-meta
+```
+Returns JSON with all articles (title, URL, repo detection, summary, tags) plus vault-wide tags and topics. Then spawn up to 10 parallel sub-agents to generate "My suggestion" and topic matches for the first 10 articles using the pre-fetched data. Maintain a sliding window — after each verdict, spawn for the next un-processed article.
+
 ## Step 4: For each article
 
-### a. Read the Obsidian note
-Use `mcp__obsidian__read_note` to get the full note including frontmatter.
+### a. Check for pre-fetched data
+If pre-fetched data is available, use it instead of reading the note via MCP. Only read the Obsidian note directly if the pre-fetch didn't cover this article.
 
 ### b. Detect GitHub/GitLab repos
 
