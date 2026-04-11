@@ -142,7 +142,7 @@ Topics: [[AI-Assisted Development]] (if any found)
 
 Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print the FULL menu as text and wait for the user to type their response.
 
-**CRITICAL: Always print ALL menu items.** Never abbreviate or truncate the menu. The only conditional item is `c` (only shown when a repo/tool is detected). Every other item MUST always appear:
+**CRITICAL: Always print ALL menu items.** Never abbreviate or truncate the menu. Conditional items: `c` (only when repo/tool detected), `r` (only for publications — DOI, bioRxiv, arXiv, journal articles). Every other item MUST always appear:
 
 ```
 !:deep-read  ?:discuss  y:inbox  t:topic  c:clip  b:bookmark  r:zotero  p:post  n:recycle  skip  q:quit
