@@ -32,9 +32,29 @@ GITLAB_RE = re.compile(r'gitlab\.com/([^/\s]+/[^/\s#?]+)', re.IGNORECASE)
 
 
 def find_vault():
-    for p in VAULT_PATHS:
-        if os.path.isdir(p) and os.path.isdir(os.path.join(p, '.obsidian')):
-            return p
+    """Find the Obsidian vault that contains curaitor folders."""
+    candidates = []
+    config_path = os.path.expanduser("~/Library/Application Support/obsidian/obsidian.json")
+    if os.path.exists(config_path):
+        import json as _json
+        with open(config_path) as f:
+            config = _json.load(f)
+        for v in config.get('vaults', {}).values():
+            p = v.get('path', '')
+            if os.path.isdir(p):
+                candidates.append(p)
+    candidates.extend(p for p in VAULT_PATHS if os.path.isdir(p))
+
+    curaitor_markers = ['Curaitor/Inbox', 'Curaitor/Review', 'Curaitor/Ignored']
+    best, best_score = None, 0
+    for p in candidates:
+        score = sum(1 for m in curaitor_markers if os.path.isdir(os.path.join(p, m)))
+        if score > best_score:
+            best, best_score = p, score
+    if best:
+        return best
+    if candidates:
+        return candidates[0]
     print("Could not find Obsidian vault", file=sys.stderr)
     sys.exit(1)
 
