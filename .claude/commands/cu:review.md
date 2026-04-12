@@ -132,8 +132,8 @@ Topics: [[AI-Assisted Development]] (if any found)
 ## Why review?
 (from the Obsidian note)
 
-## My suggestion
-(one sentence: what Claude would do with this article and why, e.g. "Recycle — this is a product announcement with no technical depth" or "Inbox — novel method directly applicable to your cfDNA work")
+## My suggestion [enter to accept]
+(one sentence starting with the verdict key, e.g. "n — product announcement, no technical depth" or "y — novel method directly applicable to your cfDNA work" or "t:Variant Calling — new statistical framework")
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -151,6 +151,7 @@ Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print th
 **Topic suggestion**: Replace `t:topic` with a specific suggestion like `t:Variant Calling Methods` whenever possible. Infer from the article's tags, content, and matching existing topics. Only fall back to bare `t:topic` if no reasonable topic can be inferred.
 
 The user can type:
+- **Enter** (empty) — accept "My suggestion" as the verdict
 - A bare key: `y`, `n`, `c`, `r`, `t`, `skip`, `q`
 - **`! <comment>`** — deep read with initial context
 - **`? <question>`** — ask a question before deciding
