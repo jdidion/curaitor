@@ -6,6 +6,8 @@ const NAV_ITEMS = [
   { label: 'Read', href: '/read', key: 'read' },
   { label: 'Ignored', href: '/ignored', key: 'ignored' },
   { label: 'Recycle', href: '/recycle', key: 'recycle' },
+  { label: 'Links', href: '/links', key: 'links' },
+  { label: 'Topics', href: '/topics', key: 'topics' },
   { label: 'Settings', href: '/settings', key: 'settings' },
 ];
 

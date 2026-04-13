@@ -59,6 +59,34 @@ export interface AccuracyStats {
   last_review_ignored: string | null;
 }
 
+export type LinkType = 'article' | 'paper' | 'repo' | 'tool' | 'video' | 'podcast' | 'other';
+export type LinkBackend = 'obsidian' | 'sqlite' | 'zotero' | 'github-stars' | 'raindrop';
+
+export interface Link {
+  id: string;
+  url: string;
+  title: string;
+  type: LinkType;
+  backend: LinkBackend;
+  category: string;            // hierarchical: "Genomics/Variant Calling"
+  tags: string[];
+  description: string;
+  dateAdded: string;
+  topicIds: string[];
+  externalId?: string;         // Zotero item key, GitHub owner/repo, Raindrop ID
+}
+
+export interface Topic {
+  id: string;
+  name: string;
+  description: string;
+  tags: string[];
+  summary: string;
+  linkCount: number;
+  dateCreated: string;
+  dateUpdated: string;
+}
+
 export interface StorageBackend {
   // Articles
   listArticles(folder: FolderName): Article[];
@@ -79,6 +107,24 @@ export interface StorageBackend {
   // Metrics
   loadStats(): AccuracyStats;
   saveStats(stats: AccuracyStats): void;
+
+  // Links
+  listLinks(opts?: { topicId?: string; type?: LinkType; category?: string; backend?: LinkBackend }): Link[];
+  getLink(id: string): Link | null;
+  createLink(link: Partial<Link>): Link;
+  updateLink(id: string, updates: Partial<Link>): void;
+  deleteLink(id: string): void;
+  linkCount(): number;
+
+  // Topics
+  listTopics(): Topic[];
+  getTopic(id: string): Topic | null;
+  createTopic(topic: Partial<Topic>): Topic;
+  updateTopic(id: string, updates: Partial<Topic>): void;
+  deleteTopic(id: string): void;
+  getTopicLinks(topicId: string): Link[];
+  addLinkToTopic(linkId: string, topicId: string): void;
+  removeLinkFromTopic(linkId: string, topicId: string): void;
 
   // Config
   readConfig(key: ConfigKey): string;

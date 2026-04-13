@@ -8,6 +8,8 @@ import review from './routes/review.js';
 import read from './routes/read.js';
 import ignored from './routes/ignored.js';
 import recycle from './routes/recycle.js';
+import links from './routes/links.js';
+import topics from './routes/topics.js';
 import settings from './routes/settings.js';
 
 // Initialize storage backend before starting server
@@ -22,6 +24,8 @@ app.route('/review', review);
 app.route('/read', read);
 app.route('/ignored', ignored);
 app.route('/recycle', recycle);
+app.route('/links', links);
+app.route('/topics', topics);
 app.route('/settings', settings);
 
 serve({ fetch: app.fetch, port: PORT }, (info) => {
