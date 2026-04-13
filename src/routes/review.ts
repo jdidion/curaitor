@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
-import { listArticles, getArticle, moveArticle, deleteArticle, updateFrontmatter, folderCount } from '../services/vault.js';
+import { listArticles, getArticle, moveArticle, deleteArticle } from '../services/vault.js';
 import { loadStats, saveStats, addSignal } from '../services/metrics.js';
 import { appendRecycle } from '../services/recycle.js';
 import { layout } from '../views/layout.js';
 import type { Article } from '../lib/frontmatter.js';
 
 const app = new Hono();
+const GROUP_THRESHOLD = 20;
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -14,6 +15,48 @@ function esc(s: string): string {
 function sourceKey(source: string): 'instapaper' | 'rss' {
   return source === 'instapaper' ? 'instapaper' : 'rss';
 }
+
+// --- Grouping logic ---
+
+interface ArticleGroup {
+  name: string;
+  articles: Article[];
+}
+
+function groupArticles(articles: Article[]): { groups: ArticleGroup[]; standalone: Article[] } {
+  // Build keyword index from tags and category
+  const keywordMap = new Map<string, Article[]>();
+
+  for (const a of articles) {
+    const keys = [...a.tags, a.category].filter(Boolean).map((k) => k.toLowerCase());
+    for (const key of keys) {
+      if (!keywordMap.has(key)) keywordMap.set(key, []);
+      keywordMap.get(key)!.push(a);
+    }
+  }
+
+  // Find groups: keywords shared by 2+ articles
+  const assigned = new Set<string>();
+  const groups: ArticleGroup[] = [];
+
+  // Sort by group size descending
+  const candidates = [...keywordMap.entries()]
+    .filter(([, arts]) => arts.length >= 2)
+    .sort((a, b) => b[1].length - a[1].length);
+
+  for (const [keyword, arts] of candidates) {
+    const unassigned = arts.filter((a) => !assigned.has(a.filename));
+    if (unassigned.length < 2) continue;
+
+    groups.push({ name: keyword, articles: unassigned });
+    for (const a of unassigned) assigned.add(a.filename);
+  }
+
+  const standalone = articles.filter((a) => !assigned.has(a.filename));
+  return { groups, standalone };
+}
+
+// --- Rendering ---
 
 function renderDetail(article: Article): string {
   const tags = article.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join(' ');
@@ -41,8 +84,78 @@ function renderDetail(article: Article): string {
   `;
 }
 
-function renderList(articles: Article[]): string {
-  return articles.map((a) => {
+function renderGroupedView(groups: ArticleGroup[], standalone: Article[], total: number): string {
+  const groupHtml = groups.map((g) => {
+    const filenames = g.articles.map((a) => a.filename).join(',');
+    const items = g.articles.map((a) => {
+      const fn = encodeURIComponent(a.filename);
+      const tags = a.tags.slice(0, 2).map((t) => `<span class="tag">${esc(t)}</span>`).join('');
+      return `<div class="article-item" hx-get="/review/${fn}" hx-target="#article-detail" hx-swap="innerHTML">
+        <div class="title">${esc(a.title)}</div>
+        <div class="meta">${a.source || 'unknown'} &middot; ${a.dateTriaged}</div>
+        <div>${tags}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="group">
+      <div class="group-header">
+        <span>${esc(g.name)} <span class="count">(${g.articles.length})</span></span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-accent" hx-post="/review/batch" hx-vals='${esc(JSON.stringify({ verdict: 'y', filenames }))}' hx-target="#review-content" hx-swap="innerHTML">
+            <span class="key">y</span> All to Inbox
+          </button>
+          <button class="btn btn-sm" hx-post="/review/batch" hx-vals='${esc(JSON.stringify({ verdict: 't', filenames, topic: g.name }))}' hx-target="#review-content" hx-swap="innerHTML">
+            <span class="key">t</span> Topic: ${esc(g.name)}
+          </button>
+          <button class="btn btn-sm btn-danger" hx-post="/review/batch" hx-vals='${esc(JSON.stringify({ verdict: 'n', filenames }))}' hx-target="#review-content" hx-swap="innerHTML">
+            <span class="key">n</span> Recycle all
+          </button>
+        </div>
+      </div>
+      <div class="group-items">${items}</div>
+    </div>`;
+  }).join('');
+
+  const standaloneHtml = standalone.length > 0 ? `
+    <div class="group" style="margin-top:20px;">
+      <div class="group-header">
+        <span>Standalone <span class="count">(${standalone.length})</span></span>
+      </div>
+      <div class="group-items">
+        ${standalone.map((a) => {
+          const fn = encodeURIComponent(a.filename);
+          const tags = a.tags.slice(0, 2).map((t) => `<span class="tag">${esc(t)}</span>`).join('');
+          return `<div class="article-item" hx-get="/review/${fn}" hx-target="#article-detail" hx-swap="innerHTML">
+            <div class="title">${esc(a.title)}</div>
+            <div class="meta">${a.source || 'unknown'} &middot; ${a.category} &middot; ${a.dateTriaged}</div>
+            <div>${tags}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  return `
+    <div class="page-header">
+      <h1>Review <span style="color:var(--text-muted);font-size:16px">${total} articles (${groups.length} groups + ${standalone.length} standalone)</span></h1>
+      <a href="/review?flat=1" class="btn btn-sm">Flat view</a>
+    </div>
+    <div class="two-pane">
+      <div class="article-list" id="article-list">
+        ${groupHtml}
+        ${standaloneHtml}
+      </div>
+      <div class="article-detail" id="article-detail">
+        <p style="color:var(--text-muted);padding:40px;text-align:center;">
+          Select a group action or click an article to review individually
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+function renderFlatView(articles: Article[]): string {
+  const list = articles.map((a) => {
     const tags = a.tags.slice(0, 3).map((t) => `<span class="tag">${esc(t)}</span>`).join('');
     const fn = encodeURIComponent(a.filename);
     return `<div class="article-item" hx-get="/review/${fn}" hx-target="#article-detail" hx-swap="innerHTML">
@@ -51,25 +164,35 @@ function renderList(articles: Article[]): string {
       <div>${tags}</div>
     </div>`;
   }).join('');
-}
 
-app.get('/', (c) => {
-  const articles = listArticles('review');
   const first = articles[0];
-
-  const content = `
+  return `
     <div class="page-header">
       <h1>Review <span style="color:var(--text-muted);font-size:16px">${articles.length} articles</span></h1>
+      ${articles.length >= GROUP_THRESHOLD ? '<a href="/review" class="btn btn-sm">Grouped view</a>' : ''}
     </div>
     <div class="two-pane">
-      <div class="article-list" id="article-list">
-        ${renderList(articles)}
-      </div>
+      <div class="article-list" id="article-list">${list}</div>
       <div class="article-detail" id="article-detail">
         ${first ? renderDetail(first) : '<p style="color:var(--text-muted);padding:40px;text-align:center;">Review queue is empty</p>'}
       </div>
     </div>
   `;
+}
+
+// --- Routes ---
+
+app.get('/', (c) => {
+  const articles = listArticles('review');
+  const flat = c.req.query('flat') === '1';
+
+  let content: string;
+  if (articles.length >= GROUP_THRESHOLD && !flat) {
+    const { groups, standalone } = groupArticles(articles);
+    content = renderGroupedView(groups, standalone, articles.length);
+  } else {
+    content = renderFlatView(articles);
+  }
 
   return c.html(layout({ title: 'Review', content, activeNav: 'review', navCounts: { review: articles.length } }));
 });
@@ -80,6 +203,7 @@ app.get('/:filename', (c) => {
   return c.html(renderDetail(article));
 });
 
+// Single article verdict
 app.post('/:filename/verdict', async (c) => {
   const filename = c.req.param('filename');
   const body = await c.req.parseBody();
@@ -88,35 +212,69 @@ app.post('/:filename/verdict', async (c) => {
   if (!article) return c.html('<p>Article not found</p>', 404);
 
   const stats = loadStats();
-  const src = sourceKey(article.source);
-
-  switch (verdict) {
-    case 'y':
-      moveArticle('review', 'inbox', filename);
-      addSignal(stats, src, 'tp', article.title);
-      break;
-    case 'n':
-      appendRecycle(article.title, article.url);
-      deleteArticle('review', filename);
-      addSignal(stats, src, 'fp', article.title);
-      break;
-    case 't':
-    case 'c':
-    case 'b':
-      deleteArticle('review', filename);
-      addSignal(stats, src, 'tp', article.title);
-      break;
-    case 'skip':
-      break;
-  }
-
+  applyVerdict(verdict, article, stats);
   saveStats(stats);
 
-  // Return next article
   const remaining = listArticles('review');
   const next = remaining[0];
   if (next) return c.html(renderDetail(next));
   return c.html('<p style="color:var(--text-muted);padding:40px;text-align:center;">Review queue is empty</p>');
 });
+
+// Batch verdict for a group
+app.post('/batch', async (c) => {
+  const body = await c.req.parseBody();
+  const verdict = body.verdict as string;
+  const filenames = (body.filenames as string || '').split(',').filter(Boolean);
+
+  const stats = loadStats();
+  let processed = 0;
+
+  for (const filename of filenames) {
+    const article = getArticle('review', filename);
+    if (!article) continue;
+    applyVerdict(verdict, article, stats, body.topic as string);
+    processed++;
+  }
+
+  saveStats(stats);
+
+  // Re-render the full grouped view
+  const remaining = listArticles('review');
+  if (remaining.length >= GROUP_THRESHOLD) {
+    const { groups, standalone } = groupArticles(remaining);
+    return c.html(`
+      <div style="padding:12px;background:var(--bg-card);border:1px solid var(--green);border-radius:var(--radius);margin-bottom:16px;">
+        ${processed} articles ${verdict === 'n' ? 'recycled' : verdict === 'y' ? 'moved to inbox' : 'processed'}
+      </div>
+      ${renderGroupedView(groups, standalone, remaining.length)}
+    `);
+  }
+  return c.html(renderFlatView(remaining));
+});
+
+function applyVerdict(verdict: string, article: Article, stats: ReturnType<typeof loadStats>, topic?: string): void {
+  const src = sourceKey(article.source);
+
+  switch (verdict) {
+    case 'y':
+      moveArticle('review', 'inbox', article.filename);
+      addSignal(stats, src, 'tp', article.title);
+      break;
+    case 'n':
+      appendRecycle(article.title, article.url);
+      deleteArticle('review', article.filename);
+      addSignal(stats, src, 'fp', article.title);
+      break;
+    case 't':
+    case 'c':
+    case 'b':
+      deleteArticle('review', article.filename);
+      addSignal(stats, src, 'tp', article.title);
+      break;
+    case 'skip':
+      break;
+  }
+}
 
 export default app;
