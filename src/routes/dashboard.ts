@@ -16,32 +16,25 @@ app.get('/', (c) => {
     <div class="page-header">
       <h1>Dashboard</h1>
     </div>
+    <div style="font-size:13px;color:var(--text-dim);margin-top:16px;">Articles currently in queue</div>
 
     <div class="card-grid">
-      <div class="card stat-card">
+      <a href="/read" class="card stat-card" style="text-decoration:none;color:inherit;">
         <div class="stat-value" style="color: var(--green)">${counts.inbox}</div>
         <div class="stat-label">Inbox</div>
-      </div>
-      <div class="card stat-card">
+      </a>
+      <a href="/review" class="card stat-card" style="text-decoration:none;color:inherit;">
         <div class="stat-value" style="color: var(--yellow)">${counts.review}</div>
         <div class="stat-label">Review</div>
-      </div>
-      <div class="card stat-card">
+      </a>
+      <a href="/ignored" class="card stat-card" style="text-decoration:none;color:inherit;">
         <div class="stat-value" style="color: var(--text-muted)">${counts.ignored}</div>
         <div class="stat-label">Ignored</div>
-      </div>
-      <div class="card stat-card">
+      </a>
+      <a href="/recycle" class="card stat-card" style="text-decoration:none;color:inherit;">
         <div class="stat-value" style="color: var(--text-dim)">${recCount}</div>
         <div class="stat-label">Recycled</div>
-      </div>
-      <div class="card stat-card">
-        <div class="stat-value" style="color: var(--blue)">${counts.library}</div>
-        <div class="stat-label">Library</div>
-      </div>
-      <div class="card stat-card">
-        <div class="stat-value" style="color: var(--purple)">${counts.topics}</div>
-        <div class="stat-label">Topics</div>
-      </div>
+      </a>
     </div>
 
     <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
@@ -73,7 +66,8 @@ app.get('/', (c) => {
       </div>
 
       <div class="card">
-        <h2 style="font-size:16px;margin-bottom:16px;">Lifetime</h2>
+        <h2 style="font-size:16px;margin-bottom:4px;">Lifetime Accuracy</h2>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">Signals from review sessions</div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;">
           <div><div style="font-size:24px;font-weight:700;color:var(--green)">${metrics.lifetime.tp}</div><div class="stat-label">TP</div></div>
           <div><div style="font-size:24px;font-weight:700;color:var(--red)">${metrics.lifetime.fp}</div><div class="stat-label">FP</div></div>
