@@ -26,9 +26,11 @@ Check Obsidian for existing notes with matching URLs (search via `mcp__obsidian_
 
 ## Step 4: Evaluate each article
 
-For each new article, evaluate against `reading-prefs.md`:
+For each new article, evaluate against `reading-prefs.md`.
 
-- **Summary** (from RSS description/abstract — do NOT WebFetch full text in unattended mode to save time)
+**Non-text sources**: If a feed entry links to a video or podcast, check for a transcript or show notes in the RSS description. If available, evaluate from that. If not, route to `Curaitor/Review/` as uncertain. Add `media_type: video|podcast` to frontmatter.
+
+- **Summary** (from RSS description/abstract/transcript — do NOT WebFetch full text in unattended mode to save time)
 - **Category**: `ai-tooling` | `genomics` | `methods` | `general`
 - **Confidence**: `high-interested` | `uncertain` | `high-not-interested`
 - **Cross-disciplinary check**:

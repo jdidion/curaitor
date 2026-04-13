@@ -289,6 +289,19 @@ python scripts/zotero.py search QUERY
 
 Paper detection: DOI URLs, bioRxiv, arXiv, nature.com/articles, academic.oup.com, springer.com. Non-papers only saved to Zotero on explicit `r` verdict.
 
+## Non-text sources (videos, podcasts)
+
+When triaging or discovering a video (YouTube, Vimeo) or podcast episode:
+
+1. **Detect media type** from URL: `youtube.com`, `youtu.be`, podcasting platforms, `.mp3`/`.mp4` links
+2. **Check for transcript**: YouTube auto-generates transcripts (accessible via WebFetch on the page or transcript APIs); podcast feeds often include show notes or linked transcripts
+3. **If transcript available**: use it to generate the summary — evaluate the same way as article text
+4. **If no transcript but description/show notes exist**: evaluate from those (treat like an RSS abstract)
+5. **If neither**: route to `Curaitor/Review/` as uncertain — the user can decide interactively
+6. **Frontmatter**: add `media_type: video` or `media_type: podcast` so review agent knows to expect non-text content
+
+During `/cu:review` deep read (`!`), fetch the transcript for RAG discussion rather than the page HTML.
+
 ## PDF reading
 
 When the `pdf-reader` MCP server is available (globally installed), use `read_pdf` for fetching full content from PDF-format papers. This extracts text AND images (figures, tables), which is critical for scientific papers where figures carry key information.
