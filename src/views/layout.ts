@@ -31,14 +31,14 @@ export function layout(opts: {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0f0f13">
-  <title>${title} - Curaitor</title>
+  <title>${title} - CurAItor</title>
   <style>${CSS}</style>
 </head>
 <body>
   <nav>
     <a class="logo" href="/">
-      <img src="/public/logo.svg" alt="Curaitor">
-      <span>Curaitor</span>
+      <img src="/public/logo.svg" alt="CurAItor">
+      <span>CurAItor</span>
     </a>
     <div style="display:flex;gap:24px;align-items:center;">
       ${navLinks}

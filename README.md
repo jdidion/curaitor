@@ -1,341 +1,115 @@
-# curaitor
+<p align="center">
+  <img src="public/logo.svg" alt="Curaitor" width="80" height="80">
+</p>
 
-> Licensed under the [Elastic License 2.0](LICENSE.md). Free to use. See license for details.
+<h1 align="center">CurAItor</h1>
 
-AI-powered article discovery, triage, and interactive review — built as a [Claude Code](https://claude.ai/claude-code) plugin.
+<p align="center">
+  AI-powered article discovery, triage, and review<br>
+  <em>A web app + <a href="https://claude.ai/claude-code">Claude Code</a> plugin for researchers who read too much</em>
+</p>
 
-curaitor helps researchers and knowledge workers stay on top of their reading by automating the tedious parts of article discovery and triage while keeping the human in the loop for what matters: deciding what's worth reading and discussing it deeply.
-
-## How it works
-
-```
-RSS feeds ──> /cu:discover ──> Obsidian vault (Inbox / Review / Ignored)
-                                     ^
-Instapaper ──> /cu:triage ───────────┘──> Instapaper Archive
-                                     |
-                         /cu:review (interactive triage)
-                         /cu:read   (deep reading + discussion)
-                                     |
-                          cmux browser + Claude discussion
-                                     |
-                          reading-prefs.md updated
-                          Zotero / Topics / Tools catalog
-                          GitHub repos starred
-```
-
-### Three-tier confidence routing
-
-Every article is evaluated against your learned preferences:
-
-- **Inbox/** — Claude is confident you'll want this. Ready to read.
-- **Review/** — Claude is uncertain. Queued for your interactive review.
-- **Ignored/** — Claude is confident you won't want this. Periodically review for false negatives.
-
-### Preference learning
-
-curaitor learns your interests over time. Every time you give feedback during `/cu:review` or `/cu:read`, Claude updates `config/reading-prefs.md` with what your decision reveals. Deterministic routing rules in `config/triage-rules.yaml` supplement the LLM evaluation.
-
-## Commands
-
-| Command | Mode | What it does |
-|---------|------|-------------|
-| `/cu:triage` | Unattended | Fetch Instapaper saves, evaluate, route to Obsidian, archive |
-| `/cu:discover` | Unattended | Scan RSS feeds for new articles, evaluate, route to Obsidian |
-| `/cu:review` | Interactive | Browse Review queue in cmux browser, discuss, give verdicts |
-| `/cu:read` | Interactive | Deep read Inbox articles: full summary, RAG discussion, save or discard |
-| `/cu:review-ignored` | Interactive | Check Ignored folder for false negatives |
-| `/cu:seed-preferences` | Interactive | One-time: analyze reading history to build initial preferences |
-
-### Review verdicts (`/cu:review`)
-
-| Key | Action |
-|-----|--------|
-| `!` | **Deep read** — save permanently, discuss interactively, save discussion notes |
-| `?` | **Discuss** — ask questions about the article before deciding |
-| `y` | Interested — move to Inbox. Star GitHub repo if detected. |
-| `t` | **Topic** — attach to an existing or new topic in Obsidian |
-| `c` | **Clip** — add repo/tool to Tools & Projects catalog, delete article |
-| `b` | **Bookmark** — save link to `Bookmarks.md` (or custom command), delete article |
-| `r` | Save to Zotero as reference |
-| `n` | **Recycle** — not keeping. Appended to `Curaitor/Recycle.md`, note deleted. |
-| `skip` | Leave in Curaitor/Review/ for later |
-| `q` | Quit review session |
-
-Inline commands: `! compare to our pipeline`, `? does this support hg38?`, `t Variant Calling`
-
-### Read verdicts (`/cu:read`)
-
-| Key | Action |
-|-----|--------|
-| `r` | Save to Zotero (papers), with discussion notes |
-| `t` | Attach to a topic |
-| `c` | Clip tool to Tools & Projects catalog |
-| `b` | Bookmark link to `Bookmarks.md` (or custom command) |
-| `n` | **Recycle** — not keeping. Appended to `Curaitor/Recycle.md`, note deleted. |
-| `skip` | Leave in Inbox |
-| `q` | Quit |
-
-## Setup
-
-There are two ways to run curaitor: as a **Claude Code plugin** (direct) or in a **Docker container** (sandboxed).
-
-### Prerequisites
-
-- [Claude Code](https://claude.ai/claude-code) CLI
-- [Obsidian](https://obsidian.md) with an [MCP server](https://github.com/modelcontextprotocol/servers) configured
-- Python 3 with `requests-oauthlib` and `pyyaml`
-- [cmux](https://github.com/manaflow-ai/cmux) (optional, for interactive browser review)
-- [Docker](https://www.docker.com/) (optional, for sandboxed execution)
+<p align="center">
+  <a href="LICENSE.md">Elastic License 2.0</a>
+</p>
 
 ---
 
-### Option A: Claude Code Plugin (direct)
+![Curaitor Dashboard](public/screenshot-dashboard.png)
 
-Run curaitor directly in Claude Code. Simplest setup, full access to your environment.
+## What is CurAItor?
 
-#### 1. Clone the repo
+CurAItor helps researchers and knowledge workers stay on top of their reading. It automates the tedious parts — finding articles, evaluating relevance, routing to the right queue — while keeping you in the loop for what matters: deciding what's worth reading and discussing it deeply.
 
-```bash
-git clone https://github.com/jdidion/curaitor.git ~/projects/curaitor
-```
+**Two interfaces, one system:**
+- **Web app** — dark-themed dashboard for reviewing articles, managing queues, tracking accuracy, and configuring schedules
+- **Claude Code plugin** — conversational AI agent that discovers, triages, and discusses articles with you in the terminal
 
-#### 2. Install dependencies
+## Features
 
-```bash
-pip3 install requests-oauthlib pyyaml
-```
+### Web Dashboard
+- **Queue overview** — see Inbox, Review, Ignored, and Recycle counts at a glance
+- **Accuracy metrics** — autonomy level, precision/recall gauges, lifetime TP/FP/TN/FN
+- **Article review** — two-pane browser with verdict buttons (Inbox, Recycle, Topic, Clip, Bookmark, Zotero)
+- **Grouped review** — 20+ articles auto-grouped by topic for batch decisions
+- **Ignored scan** — batch confirm or rescue false negatives
+- **Recycle bin** — view dismissed articles, clear bin
+- **Settings** — edit feeds, preferences, triage rules, and cron schedules from the UI
 
-#### 3. Configure credentials
+### AI Agent (Claude Code Plugin)
+- **Three-tier routing** — Inbox (confident), Review (uncertain), Ignored (not interested)
+- **Progressive autonomy** — agent earns routing confidence through accuracy tracking (4 levels)
+- **Preference learning** — every review verdict teaches the agent your interests
+- **Deep reading** — fetch full article text, RAG discussion, save notes to Zotero or Obsidian
+- **Topic graph** — cluster related articles into topic notes
 
-```bash
-cp .env.example .env
-# Edit .env with your API keys
-```
+### Sources
+- **Instapaper** — triage hand-saved bookmarks
+- **RSS/Feedly** — discover from science journals, blogs, preprint servers
+- **Sill** — social network links from Bluesky/Mastodon
+- **Videos & podcasts** — transcript-based evaluation
 
-You'll need:
-- **Instapaper API keys** — apply at [instapaper.com/developers](https://www.instapaper.com/main/request_oauth_consumer_token), then do a one-time xAuth token exchange:
+### Storage Backends
+- **Obsidian** (default) — articles stored as markdown with YAML frontmatter
+- **SQLite** — embedded database for standalone/Docker deployment
 
-```python
-from requests_oauthlib import OAuth1Session
+## Quick Start
 
-session = OAuth1Session('CONSUMER_KEY', client_secret='CONSUMER_SECRET')
-resp = session.post('https://www.instapaper.com/api/1/oauth/access_token',
-    data={'x_auth_username': 'you@email.com',
-          'x_auth_password': 'your_password',
-          'x_auth_mode': 'client_auth'})
-print(resp.text)  # oauth_token=X&oauth_token_secret=Y
-```
-
-- **Zotero API key** (optional) — get at [zotero.org/settings/keys](https://www.zotero.org/settings/keys)
-
-#### 4. Import RSS feeds
-
-Export OPML from your feed reader (Feedly, Inoreader, etc.) and import:
-
-```bash
-python scripts/import-opml.py ~/Downloads/feedly-export.opml --folder Science
-```
-
-This creates `config/feeds.yaml` (gitignored). Append from multiple folders:
+### Web App
 
 ```bash
-python scripts/import-opml.py ~/Downloads/export.opml --folder Tech --append
+git clone https://github.com/jdidion/curaitor.git
+cd curaitor
+cp .env.example .env        # edit with your vault path
+npm install
+npm run dev                  # http://localhost:3141
 ```
 
-See `config/feeds.yaml.example` for format. Per-feed `user_agent` overrides are supported for sites that block bots.
+### Claude Code Plugin
 
-#### 5. Seed preferences
+Install from the [plugin marketplace](https://github.com/jdidion/claude-plugins):
+
+```
+/plugin marketplace add jdidion/claude-plugins
+/plugin install curaitor@jdidion-plugins
+```
+
+Then run commands: `/cu:triage`, `/cu:discover`, `/cu:review`, `/cu:read`
+
+## Configuration
+
+### Environment (`.env`)
 
 ```bash
-cd ~/projects/curaitor && claude
-# then: /cu:seed-preferences
+# Storage: obsidian (default) or sqlite
+STORAGE_BACKEND=obsidian
+VAULT_PATH=/path/to/obsidian/vault     # auto-detected if not set
+PLUGIN_PATH=/path/to/curaitor/plugin   # auto-detected if not set
+SQLITE_PATH=./curaitor.db              # for sqlite backend
+PORT=3141
 ```
 
-#### 6. Run
+### Scheduling
 
-```bash
-# Interactive review/reading
-cd ~/projects/curaitor && claude
-# then: /cu:review, /cu:read, etc.
-
-# Unattended triage
-cd ~/projects/curaitor && claude -p "/cu:triage" --permission-mode bypassPermissions
-```
-
-#### 7. Schedule (optional)
+Cron jobs for unattended triage and discovery are managed from the Settings page, or manually:
 
 ```bash
 # Triage Instapaper every 6 hours
-0 */6 * * * cd ~/projects/curaitor && claude -p "/cu:triage" --permission-mode bypassPermissions >> ~/curaitor-triage.log 2>&1
+0 */6 * * * cd /path/to/workspace && claude -p "/cu:triage" --permission-mode bypassPermissions
 
-# Discover from feeds daily at 6am
-0 6 * * * cd ~/projects/curaitor && claude -p "/cu:discover" --permission-mode bypassPermissions >> ~/curaitor-discover.log 2>&1
+# Discover from RSS daily at 6am
+0 6 * * * cd /path/to/workspace && claude -p "/cu:discover" --permission-mode bypassPermissions
 ```
 
-#### 8. Separate workspaces (optional)
+### RSS Feeds
 
-For isolated Claude sessions between interactive and unattended modes:
-
-```bash
-bash scripts/setup.sh both
-```
-
-This creates `~/projects/curaitor-review/` and `~/projects/curaitor-triage/` with symlinked commands and local credentials. See `scripts/setup.sh` for details.
-
----
-
-### Option B: Docker (sandboxed)
-
-Run curaitor in a Docker container for security isolation. The container only has access to your credentials (read-only), config (read-write for preferences), and Obsidian vault.
-
-#### 1. Clone and configure
-
-```bash
-git clone https://github.com/jdidion/curaitor.git ~/projects/curaitor
-cd ~/projects/curaitor
-cp .env.example .env
-# Edit .env with your API keys (see Option A step 3)
-```
-
-#### 2. Import feeds and seed preferences
-
-These steps require direct Claude access (run outside Docker first):
+Add feeds to `config/feeds.yaml` or import from OPML:
 
 ```bash
 python scripts/import-opml.py ~/Downloads/feedly-export.opml --folder Science
-claude -p "/cu:seed-preferences"
 ```
 
-#### 3. Set environment variables
-
-```bash
-# Required: your Anthropic API key
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# Required: path to your Obsidian vault
-export OBSIDIAN_VAULT=~/Library/CloudStorage/GoogleDrive-you@gmail.com/My\ Drive/Obsidian
-
-# Optional: for GitHub starring and Bitwarden
-export GITHUB_TOKEN=ghp_...
-export BW_SESSION=...
-```
-
-#### 4. Build
-
-```bash
-docker compose build
-```
-
-#### 5. Run
-
-```bash
-# Sandboxed triage (unattended)
-docker compose --profile triage up
-
-# Sandboxed discover
-docker compose --profile discover up
-
-# Interactive review (attached terminal)
-docker compose --profile review run review
-```
-
-#### 6. Schedule with cron
-
-```bash
-0 */6 * * * cd ~/projects/curaitor && docker compose --profile triage up >> ~/curaitor-triage.log 2>&1
-0 6 * * * cd ~/projects/curaitor && docker compose --profile discover up >> ~/curaitor-discover.log 2>&1
-```
-
-#### What the container can access
-
-| Resource | Access | Why |
-|----------|--------|-----|
-| `.env` | Read-only | API credentials |
-| `config/` | Read-write | Preferences + feeds (needs to update prefs) |
-| Obsidian vault | Read-write | Create/move/update notes |
-| Network | Host | MCP servers on localhost |
-
-What it **cannot** access: `~/.ssh`, `~/.aws`, other projects, system commands beyond the allowlist in `docker/settings.json`.
-
-See `config/default-permissions.md` for the full permissions analysis.
-
----
-
-## Helper scripts
-
-These reduce token usage by handling mechanical operations outside the LLM:
-
-```bash
-# Instapaper API (replaces inline OAuth Python)
-python scripts/instapaper.py list [--limit N] [--folder archive]
-python scripts/instapaper.py text BOOKMARK_ID
-python scripts/instapaper.py archive ID [ID ...]
-
-# RSS feeds (fetch + parse all feeds)
-python scripts/feeds.py [--days N] [--category CAT]
-
-# Batch write Obsidian notes (faster than MCP for >10 notes)
-echo '[{"path":"Inbox/title.md","frontmatter":{...},"content":"..."}]' | python scripts/write-notes.py
-
-# Import feeds from OPML
-python scripts/import-opml.py FILE [--folder NAME] [--append]
-
-# Find correct Python (pixi/homebrew/system)
-eval "$(bash scripts/find-python.sh)"
-
-# Set up workspaces
-bash scripts/setup.sh [review|triage|both]
-```
-
-## Auto-tagging and topics
-
-curaitor automatically generates semantic tags for every article and searches for related topic notes in your Obsidian vault's `Topics/` folder. When matches are found, it offers to link the article to existing topics. Use the `t` verdict to attach articles to topics or create new ones.
-
-Articles attached to topics are removed from the review/inbox queue — they live under the topic note.
-
-## Customization
-
-### Link-saving tools
-
-curaitor is built around **Instapaper** but can be adapted:
-
-| Tool | Auth | Key change |
-|------|------|-----------|
-| **Pocket** | OAuth 2.0 | Replace API calls in `cu:triage.md` with `/v3/get` and `/v3/send` |
-| **Raindrop.io** | OAuth 2.0 or test token | `GET /raindrops/{id}`, `PUT /raindrop/{id}` |
-| **Readwise Reader** | Token | `/api/v3/list/` — can also replace Feedly for RSS |
-| **None (RSS only)** | — | Remove `/cu:triage`, use only `/cu:discover` |
-
-### Reference managers
-
-| Tool | Key change |
-|------|-----------|
-| **Zotero** (default) | Web API, save items + notes |
-| **Mendeley** | OAuth 2.0, `POST /documents` + `POST /annotations` |
-| **Plain Obsidian** | Save to `Library/` with citation metadata in frontmatter |
-
-### Note systems
-
-| Tool | Key change |
-|------|-----------|
-| **Obsidian** (default) | Via MCP server |
-| **Notion** | Swap MCP calls for Notion API/MCP |
-| **Local markdown** | Replace `mcp__obsidian__*` with `Write` tool calls |
-
-### RSS sources
-
-Any RSS/Atom/RDF feed URL works in `config/feeds.yaml`. Per-feed `user_agent` overrides supported. See `config/feeds.yaml.example`.
-
-#### Example: Social network links via Sill
-
-[Sill](https://sill.social/) aggregates links shared by people you follow on Bluesky and Mastodon. With Sill+, you get RSS feeds filtered by your interests — a great way to discover articles your network is talking about.
-
-Setup:
-1. Sign up for [Sill+](https://sill.social/) ($5/mo for premium features including RSS and custom notifications)
-2. Connect your Bluesky and/or Mastodon accounts
-3. Set up Custom Notifications with keyword filters matching your interests (e.g., genomics, bioinformatics, AI tools, variant calling, cfDNA)
-4. Copy the RSS feed URL from your Sill+ dashboard
-5. Add to `config/feeds.yaml`:
+Social network links via [Sill](https://sill.social/):
 
 ```yaml
 - name: Sill Social Network Links
@@ -343,67 +117,38 @@ Setup:
   category: social
 ```
 
-Sill articles will flow through `/cu:discover` like any other RSS feed, with three-tier routing based on your preferences.
-
 ## Architecture
 
 ```
-curaitor/
-├── CLAUDE.md                       # Plugin context for Claude
-├── .claude/commands/               # Slash commands (cu:*)
-│   ├── cu:triage.md
-│   ├── cu:discover.md
-│   ├── cu:review.md
-│   ├── cu:read.md
-│   ├── cu:review-ignored.md
-│   └── cu:seed-preferences.md
-├── config/
-│   ├── feeds.yaml                  # Your RSS feeds (gitignored)
-│   ├── feeds.yaml.example          # Feed format example
-│   ├── reading-prefs.md            # Learned preferences (gitignored)
-│   ├── triage-rules.yaml           # Deterministic routing rules
-│   └── default-permissions.md      # Safe permissions for sandboxing
-├── scripts/
-│   ├── instapaper.py               # Instapaper API client
-│   ├── feeds.py                    # RSS feed fetcher + parser
-│   ├── write-notes.py              # Batch Obsidian note writer
-│   ├── import-opml.py              # OPML → feeds.yaml converter
-│   ├── find-python.sh              # Find Python with deps installed
-│   └── setup.sh                    # Workspace setup script
-├── docker/
-│   └── settings.json               # Scoped permissions for Docker
-├── Dockerfile
-├── docker-compose.yaml
-├── .env.example
-└── .gitignore
+curaitor/                          # Web app
+├── src/
+│   ├── index.ts                   # Hono server
+│   ├── storage/                   # Pluggable backend (Obsidian / SQLite)
+│   ├── services/                  # Business logic
+│   ├── routes/                    # Dashboard, Review, Read, Ignored, Recycle, Settings
+│   └── views/                     # Server-rendered HTML (dark theme)
+├── public/                        # Logo, static assets
+└── .env                           # Config
+
+claude-plugins/plugins/curaitor/   # Claude Code plugin
+├── skills/                        # cu:triage, cu:discover, cu:review, etc.
+├── scripts/                       # Python helpers (instapaper, feedly, zotero)
+└── config/                        # Preferences, feeds, triage rules, accuracy stats
 ```
 
-## Roadmap
+## Tech Stack
 
-### References
+- **[Hono](https://hono.dev/)** — lightweight HTTP framework
+- **[htmx](https://htmx.org/)** — server-driven interactivity
+- **[Alpine.js](https://alpinejs.dev/)** — keyboard shortcuts and UI state
+- **[better-sqlite3](https://github.com/WiseLibs/better-sqlite3)** — embedded SQLite
+- **[gray-matter](https://github.com/jonschlinkert/gray-matter)** — YAML frontmatter parsing
+- **[tsx](https://tsx.is/)** — run TypeScript directly, no build step
 
-* Stephen Turner's guide: https://blog.stephenturner.us/p/staying-current-in-data-science-and-computational-biology-2026
+## References
 
-### Sources
-- **Bluesky & Mastodon** — via [Sill](https://sill.social/) RSS feeds (see setup example under RSS sources above)
-- **Semantic Scholar** — "more like this" recommendations seeded from your Zotero library
-- **PubMed E-utilities** — targeted searches by topic or author
-- **Gmail newsletters** — scan for article links in newsletter emails via Google MCP
-- **LinkedIn notification emails** — extract shared article URLs from LinkedIn digest emails
-
-### Features
-- **Cron dashboard** — summary of what triage/discover found since last interactive session
-- **Deduplication** — cross-reference discovered articles against Zotero library and existing Obsidian notes
-- **Topic graph visualization** — Obsidian graph view of topics and their linked articles
-- **Reading stats** — track articles read, archived, time-to-triage, preference drift over time
-- **Multi-user** — shared topic notes and Tools & Projects catalog for teams
-- **Readwise integration** — sync highlights and annotations from Readwise Reader
-
-### Infrastructure
-- **GitHub Actions** — scheduled triage/discover as an alternative to local cron
-- **Obsidian Publish** — share curated reading lists and topic notes publicly
-- **MCP server** — expose curaitor as an MCP server for use from other Claude Code projects
+- [Staying Current in Data Science and Computational Biology](https://blog.stephenturner.us/p/staying-current-in-data-science-and-computational-biology-2026) — Stephen Turner
 
 ## License
 
-MIT
+[Elastic License 2.0](LICENSE.md) — free to use, cannot be offered as a managed service.
