@@ -88,6 +88,9 @@ print(resp.text)  # Returns HTML of processed article
 
 Or use WebFetch on the article URL as a simpler alternative.
 
+### LinkedIn link mining
+When the article is a LinkedIn post, check the post content for ALL external links — not just GitHub. LinkedIn posts often link to product sites (.org, .io, .dev), blog posts, arxiv papers, or docs. Before classifying as "no repo/no source", extract every link from the post body via WebFetch or cmux browser snapshot. Resolve shortened `lnkd.in` links. The real content is often behind one of these links, not in the LinkedIn post itself.
+
 ### Non-text sources (videos, podcasts)
 If the URL is a video (YouTube, Vimeo) or podcast, check for a transcript or show notes. Use the transcript to generate the summary if available; otherwise use the description. If neither exists, route to `Curaitor/Review/` as uncertain. Add `media_type: video` or `media_type: podcast` to frontmatter.
 

@@ -13,6 +13,7 @@ $ARGUMENTS — Optional: number of days to look back (default 30).
    python3 ~/projects/curaitor/scripts/prefetch-review.py ignored --days $DAYS --include-meta
    ```
    This returns JSON with all articles, vault tags, and topics. Use this data for grouping instead of individual MCP calls.
+3. **Dedup first**: Before presenting articles, run URL dedup against the full vault. Duplicates are common in Ignored (39% in one session). Recycle all duplicates immediately — append `- [title](url) (duplicate)` to `Curaitor/Recycle.md` and delete notes. Report: "Recycled N duplicates before review."
 
 ## Step 2: Group by ignore reason and present batches
 

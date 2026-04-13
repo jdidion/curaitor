@@ -44,6 +44,15 @@ Review queue: 18 articles
 Starting with #1.
 ```
 
+### Topic clustering
+When building the queue overview, scan for clusters of 3+ articles sharing a theme (similar tags, categories, or keywords). If found, note them:
+```
+Clusters detected:
+  5 articles on MCED/liquid biopsy — offer to create topic?
+  3 articles on spec-driven development
+```
+When the user reaches a clustered group, offer to create a new topic and batch-attach all related articles. This is faster than reviewing individually and builds the knowledge graph.
+
 ## Step 3.5: Pre-fetch pipeline (script + parallel sub-agents)
 
 **Purpose**: Eliminate wait time between articles by pre-computing data in the background. Two layers:
@@ -152,7 +161,8 @@ Do NOT use AskUserQuestion — it only supports 4 options max. Instead, print th
 
 The user can type:
 - **Enter** (empty) — accept "My suggestion" as the verdict
-- A bare key: `y`, `n`, `c`, `r`, `t`, `skip`, `q`
+- A bare key: `y`, `n`, `c`, `r`, `skip`, `q`
+- **Bare `t`** — if a topic was suggested in the menu (e.g., `t:Variant Calling`), use that topic directly. Only ask which topic if no suggestion was shown or the user types `t <different topic>`.
 - **`! <comment>`** — deep read with initial context
 - **`? <question>`** — ask a question before deciding
 - **`t <topic name>`** — attach to existing topic or create new one
@@ -367,6 +377,12 @@ Preferences updated:
 ## Rules
 - Always open the article in cmux browser before presenting
 - Wait for user input after each article
+- **Parallel work checklists**: When running 3+ parallel operations (background agents, batch actions), show a visible checklist so the user can track progress:
+  ```
+  - [x] Pre-fetch 10 articles
+  - [ ] Sub-agent: articles 1-5 (suggestions)
+  - [x] Sub-agent: articles 6-10 (suggestions)
+  ```
 - Keep assessments concise — 3-4 sentences max
 - If cmux is not available, show the URL for manual opening
 - Only update reading-prefs.md when a pattern is genuinely new

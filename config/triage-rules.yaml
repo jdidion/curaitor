@@ -32,6 +32,19 @@ inbox_title_keywords:
   - WDL
   - Nextflow
 
+# Meta-science and cross-cutting methodology → bias toward Review (not Ignored)
+# These benefit any researcher regardless of specific field
+review_title_keywords:
+  - reproducibility
+  - staying current
+  - data visualization
+  - interpretable
+  - benchmarking
+  - meta-analysis
+  - best practices
+  - code review
+  - scientific computing
+
 # Articles matching these patterns go to Ignored
 ignored_title_patterns:
   - "Sign Up | LinkedIn"  # broken LinkedIn saves
