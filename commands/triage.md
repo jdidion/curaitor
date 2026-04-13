@@ -5,10 +5,15 @@ Fetch unread Instapaper bookmarks, evaluate each article, route to Obsidian fold
 ## Arguments
 $ARGUMENTS — Optional: specific URL(s) to triage manually. If empty, fetch from Instapaper API.
 
-## Step 1: Load preferences
+## Step 1: Load preferences and autonomy level
 
-Read `config/reading-prefs.md` from the curaitor repo (at `~/projects/curaitor/config/reading-prefs.md`).
-These are learned preferences that guide confidence routing.
+Read from `~/projects/curaitor/config/`:
+1. `reading-prefs.md` — learned preferences
+2. `accuracy-stats.yaml` — current autonomy level
+3. `triage-rules.yaml` — deterministic rules and autonomy overrides
+
+**Level 0**: Instapaper → never Ignored. RSS → only Ignored by deterministic rules.
+**Level 1+**: Standard three-tier routing.
 
 ## Step 2: Fetch bookmarks from Instapaper
 

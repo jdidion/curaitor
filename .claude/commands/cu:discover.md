@@ -5,11 +5,13 @@ Fetch recent articles from configured RSS feeds, evaluate for cross-disciplinary
 ## Arguments
 $ARGUMENTS — Optional: number of days to look back (default 7), or a category filter (e.g., "ai", "genomics").
 
-## Step 1: Load preferences and feeds
+## Step 1: Load preferences, feeds, and autonomy level
 
-Read two files from the curaitor repo (`~/projects/curaitor/`):
-1. `config/reading-prefs.md` — learned preferences
-2. `config/feeds.yaml` — RSS feed list
+Read from `~/projects/curaitor/config/`:
+1. `reading-prefs.md` — learned preferences
+2. `feeds.yaml` — RSS feed list
+3. `accuracy-stats.yaml` — current autonomy level
+4. `triage-rules.yaml` — deterministic rules and autonomy overrides
 
 If `feeds.yaml` has no feeds configured, tell the user to export OPML from Feedly or add feeds manually.
 
@@ -22,7 +24,7 @@ For each feed in `feeds.yaml`:
 
 ## Step 3: Deduplicate
 
-Check Obsidian for existing notes with matching URLs (search via `mcp__obsidian__search_notes`). Skip articles already triaged.
+Check Obsidian for existing notes with matching URLs. Use `python3 ~/projects/curaitor/scripts/triage-write.py --dedup-only --urls URL1 URL2 ...` for batch checking, or `mcp__obsidian__search_notes` for individual lookups. Exact URL duplicates are immediately recycled — append `- [title](url) (duplicate)` to `Curaitor/Recycle.md`. Do NOT create notes for duplicates.
 
 ## Step 4: Evaluate each article
 
@@ -40,7 +42,10 @@ For each new article, evaluate against `reading-prefs.md`.
 
 ## Step 5: Route to Obsidian
 
-Same three-tier routing as `/triage`:
+Same three-tier routing as `/triage`, with **autonomy-level overrides**:
+- **Level 0**: RSS → only Ignored if deterministic rule matches. LLM uncertain → Review.
+- **Level 1+**: Standard three-tier routing.
+
 - **High confidence interested** → Obsidian `Curaitor/Inbox/`
 - **Uncertain** → Obsidian `Curaitor/Review/`
 - **High confidence not interested** → Obsidian `Curaitor/Ignored/`

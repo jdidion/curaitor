@@ -147,6 +147,25 @@ Read `config/reading-prefs.md` before every evaluation:
 
 In unattended mode (cron), NEVER prompt — uncertain always goes to `Curaitor/Review/`.
 
+## Progressive autonomy
+
+The agent earns routing autonomy by demonstrating accuracy. Read `config/accuracy-stats.yaml` at the start of every triage/discover run for the current level.
+
+| Level | Name | Routing behavior |
+|-------|------|-----------------|
+| **0** | Cold start | Instapaper: never Ignored (Review at worst). RSS: only Ignored if deterministic rule matches. Prompt review-ignored after every run. |
+| **1** | Normal | Standard three-tier routing. Remind review-ignored every 14 days. |
+| **2** | Confident | Less conservative uncertain threshold. Review-ignored monthly. |
+| **3** | Auto-recycle | Known junk patterns auto-recycled. Still routes uncertain to Review. |
+
+Graduation requires rolling precision/recall thresholds + review-ignored passes. Run `python3 scripts/accuracy-metrics.py` to view progress. See `config/triage-rules.yaml` `autonomy_overrides` for per-level routing rules.
+
+After each `/cu:review` or `/cu:review-ignored` session, update `config/accuracy-stats.yaml` with TP/FP/TN/FN signals and check graduation/demotion criteria. Demotion: 3+ false negatives in one review-ignored pass drops a level.
+
+### Duplicate handling
+
+Exact URL duplicates (URL already exists in any vault folder) are immediately recycled — append `- [title](url) (duplicate)` to `Curaitor/Recycle.md`. Never create a note in Ignored for duplicates. Duplicates do not count as triage quality signals.
+
 ## CRITICAL: Do not use AskUserQuestion during review
 
 NEVER use AskUserQuestion during `/cu:review` or `/cu:review-ignored`. It only supports 4 options and interrupts text output mid-sentence. Instead:

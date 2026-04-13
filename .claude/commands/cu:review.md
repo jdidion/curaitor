@@ -332,8 +332,23 @@ After each verdict, if the decision reveals a genuinely new preference pattern, 
 For **false positives** (a verdict), always log with analysis of why triage was wrong and what rule should change.
 For **true positives**, only log if the pattern is genuinely new and informative.
 
-## Step 5: Session summary
+## Step 5: Update accuracy stats and session summary
 
+At the end of the session, update `~/projects/curaitor/config/accuracy-stats.yaml`:
+
+1. **Accumulate signals**: For each article reviewed this session, add to `lifetime.{source}.{signal}` (TP or FP) and append to `rolling_window` (FIFO, max 50 entries):
+   ```yaml
+   {date: "YYYY-MM-DD", source: "instapaper", signal: "tp", title: "Article Title"}
+   ```
+   If rolling_window exceeds 50, remove the oldest entries.
+
+2. **Check graduation**: Run `python3 ~/projects/curaitor/scripts/accuracy-metrics.py --json` to check if graduation criteria are met. If so, increment `autonomy_level` and announce:
+   ```
+   Autonomy upgraded: Level 1 (Normal) → Level 2 (Confident)
+   Precision: 85% | Recall: 90% | 120 articles reviewed | 4 review-ignored passes
+   ```
+
+3. **Print session summary**:
 ```
 Review session complete:
   3 → Inbox (TP)
@@ -342,9 +357,7 @@ Review session complete:
   2 → Library (deep read, TP)
   10 remaining in Curaitor/Review/
 
-Deep reads:
-  "Article Title" — 3 discussion notes saved
-  "Article Title" — 2 discussion notes saved
+Accuracy: 5 TP, 2 FP this session | Rolling precision: 82% | Level 1 (Normal)
 
 Preferences updated:
   + interested in terminal-native AI tools

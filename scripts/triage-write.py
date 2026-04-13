@@ -175,6 +175,10 @@ def build_note(article):
         fm['feed_name'] = article['feed_name']
     if article.get('date_saved'):
         fm['date_saved'] = article['date_saved']
+    if article.get('autonomy_level') is not None:
+        fm['autonomy_level'] = article['autonomy_level']
+    if article.get('media_type'):
+        fm['media_type'] = article['media_type']
 
     # Body
     parts = []
@@ -224,10 +228,14 @@ def cmd_write(args):
         articles = [articles]
 
     written = 0
-    skipped_dup = 0
+    recycled_dup = 0
     skipped_nourl = 0
     errors = 0
     results = {'inbox': [], 'review': [], 'ignored': []}
+
+    # Recycle file for duplicates
+    recycle_path = os.path.join(vault, 'Curaitor', 'Recycle.md')
+    os.makedirs(os.path.dirname(recycle_path), exist_ok=True)
 
     for article in articles:
         url = article.get('url', '').strip()
@@ -237,7 +245,11 @@ def cmd_write(args):
 
         norm = normalize_url(url)
         if norm in known_urls:
-            skipped_dup += 1
+            # Duplicate — recycle immediately, don't create a note
+            title = article.get('title', url)
+            with open(recycle_path, 'a') as rf:
+                rf.write(f"- [{title}]({url}) (duplicate)\n")
+            recycled_dup += 1
             continue
 
         try:
@@ -258,7 +270,7 @@ def cmd_write(args):
     output = {
         'vault': vault,
         'written': written,
-        'skipped_duplicate': skipped_dup,
+        'recycled_duplicate': recycled_dup,
         'skipped_no_url': skipped_nourl,
         'errors': errors,
         'total_input': len(articles),

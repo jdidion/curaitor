@@ -42,3 +42,24 @@ ignored_title_patterns:
 source_weights:
   instapaper: 0.7   # bias toward Review/Inbox
   rss: 0.5          # neutral
+
+# Autonomy-level routing overrides (read from config/accuracy-stats.yaml)
+# These constrain how aggressively the LLM can route articles to Ignored
+autonomy_overrides:
+  level_0:  # Cold start — very conservative
+    instapaper_min_confidence: uncertain       # never ignored, Review at worst
+    rss_ignore_requires: deterministic_rule    # LLM alone can't ignore RSS
+    prompt_review_ignored: always              # remind after every triage run
+  level_1:  # Normal — standard three-tier
+    instapaper_min_confidence: high-not-interested  # normal routing
+    rss_ignore_requires: llm_or_rule           # LLM can ignore freely
+    prompt_review_ignored: 14_days             # remind if not run in 14 days
+  level_2:  # Confident — less conservative
+    instapaper_min_confidence: high-not-interested
+    rss_ignore_requires: llm_or_rule
+    prompt_review_ignored: 30_days             # monthly reminder
+  level_3:  # Auto-recycle — known patterns skip human review
+    instapaper_min_confidence: high-not-interested
+    rss_ignore_requires: llm_or_rule
+    auto_recycle_patterns: true                # confirmed junk patterns auto-recycled
+    prompt_review_ignored: 30_days

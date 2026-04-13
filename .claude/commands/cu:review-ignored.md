@@ -62,8 +62,9 @@ Examples: "all good", "rescue 1,3 from flagged", "show me the benchmarks list"
 - **"rescue [category] N,N"** → rescue specific articles from an expanded category
 - Any rescued article: move from `Curaitor/Ignored/` to `Curaitor/Review/` via `mcp__obsidian__move_note`
 
-## Step 4: Update preferences and summarize
+## Step 4: Update preferences, accuracy stats, and summarize
 
+### 4a. Update preferences
 For **false negatives** (rescued articles), update `config/reading-prefs.md`:
 ```
 - YYYY-MM-DD: FN — user interested in "Title" despite [pattern]. Triage was wrong because: [analysis]. Adjust: [new rule]
@@ -74,15 +75,31 @@ For **true negatives** (confirmed ignores), optionally reinforce correct pattern
 - YYYY-MM-DD: TN — confirmed 14 marketing/announcement articles correctly ignored. Pattern holding.
 ```
 
-Print summary:
+### 4b. Update accuracy stats
+Update `~/projects/curaitor/config/accuracy-stats.yaml`:
+1. Add TN and FN signals to `lifetime.{source}` counts and `rolling_window` (FIFO, max 50)
+2. Increment `review_ignored_passes` by 1
+3. Set `last_review_ignored` to today's date
+
+### 4c. Check graduation and demotion
+- **Graduation**: Check if rolling precision/recall + pass count meet next level criteria. If so, increment `autonomy_level` and announce.
+- **Demotion**: If 3+ false negatives were found this pass, demote one level and announce:
+  ```
+  Autonomy downgraded: Level 2 (Confident) → Level 1 (Normal)
+  Reason: 4 false negatives found — triage is being too aggressive
+  ```
+
+### 4d. Print summary
 ```
 Reviewed 42 ignored articles:
   3 rescued → moved to Curaitor/Review/ (FN — triage too aggressive)
   39 confirmed ignored → recycled (TN — triage correct)
 
+Accuracy: 39 TN, 3 FN this session | Review-ignored pass #5
+Autonomy: Level 1 (Normal) | Rolling precision: 82% | Rolling recall: 88%
+
 Preferences updated:
   ~ FN: CNV papers ARE interesting if they use a novel statistical framework
-  ~ FN: Dev tooling articles about AI agents are relevant even if not Claude-specific
   ~ TN: Marketing/announcements pattern confirmed (14 articles)
 ```
 

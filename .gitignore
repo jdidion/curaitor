@@ -17,6 +17,7 @@ config/reading-prefs.md
 config/feeds.yaml
 config/user-settings.yaml
 config/zotero.yaml
+config/accuracy-stats.yaml
 
 # Python
 __pycache__/

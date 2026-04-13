@@ -5,11 +5,15 @@ Fetch recent articles from configured RSS feeds, evaluate for cross-disciplinary
 ## Arguments
 $ARGUMENTS — Optional: number of days to look back (default 7), or a category filter (e.g., "ai", "genomics").
 
-## Step 1: Load preferences and feeds
+## Step 1: Load preferences, feeds, and autonomy level
 
-Read two files from the curaitor repo (`~/projects/curaitor/`):
-1. `config/reading-prefs.md` — learned preferences
-2. `config/feeds.yaml` — RSS feed list
+Read from `~/projects/curaitor/config/`:
+1. `reading-prefs.md` — learned preferences
+2. `feeds.yaml` — RSS feed list
+3. `accuracy-stats.yaml` — current autonomy level
+4. `triage-rules.yaml` — deterministic rules and autonomy overrides
+
+**Level 0**: RSS → only Ignored by deterministic rules. **Level 1+**: Standard three-tier.
 
 If `feeds.yaml` has no feeds configured, tell the user to export OPML from Feedly or add feeds manually.
 

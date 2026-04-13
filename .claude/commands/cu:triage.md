@@ -5,10 +5,16 @@ Fetch unread Instapaper bookmarks, evaluate each article, route to Obsidian fold
 ## Arguments
 $ARGUMENTS — Optional: specific URL(s) to triage manually. If empty, fetch from Instapaper API.
 
-## Step 1: Load preferences
+## Step 1: Load preferences and autonomy level
 
-Read `config/reading-prefs.md` from the curaitor repo (at `~/projects/curaitor/config/reading-prefs.md`).
-These are learned preferences that guide confidence routing.
+Read from `~/projects/curaitor/config/`:
+1. `reading-prefs.md` — learned preferences that guide confidence routing
+2. `accuracy-stats.yaml` — current autonomy level and accuracy metrics
+3. `triage-rules.yaml` — deterministic rules and autonomy overrides for the current level
+
+**Autonomy routing overrides** (from `triage-rules.yaml` `autonomy_overrides`):
+- **Level 0**: Instapaper articles → never Ignored (Review at worst). RSS → only Ignored if a deterministic rule matches.
+- **Level 1+**: Standard three-tier routing for both sources.
 
 ## Step 2: Fetch bookmarks from Instapaper
 
@@ -99,9 +105,18 @@ For each article, evaluate and assign:
 
 Match against preferences in `reading-prefs.md` to determine confidence level.
 
+## Step 3.5: Deduplicate and recycle duplicates
+
+Before routing, check each article URL against existing vault notes. Use `python3 ~/projects/curaitor/scripts/triage-write.py --dedup-only --urls URL1 URL2 ...` or check manually. Exact URL duplicates are immediately recycled — append `- [title](url) (duplicate)` to `Curaitor/Recycle.md`. Do NOT create notes in Ignored for duplicates. Duplicates are not triage quality signals.
+
 ## Step 4: Route to Obsidian
 
-Use the Obsidian MCP to write notes. Route based on confidence:
+Use the Obsidian MCP to write notes. Apply **autonomy-level routing overrides** (from Step 1):
+
+- **Level 0**: Instapaper articles → Inbox or Review only (never Ignored). RSS → only Ignored if deterministic rule matches.
+- **Level 1+**: Standard three-tier routing.
+
+Route based on confidence (after overrides):
 
 - **High confidence interested** → write to `Curaitor/Inbox/` folder
 - **Uncertain** → write to `Curaitor/Review/` folder
@@ -156,10 +171,16 @@ Triaged 15 articles:
   3 → Inbox     ★ (titles listed)
   7 → Review    ? (titles listed)
   3 → Ignored   ✗ (titles + reasons)
-  2 → Obsolete  ⊘ (titles + what replaced them)
+  2 → Duplicates recycled
+  0 → Obsolete  ⊘
 
 All 15 archived in Instapaper.
+
+Autonomy: Level 1 (Normal) | Rolling: --/50 entries
 ```
+
+If autonomy level is 0, always append: "Run `/cu:review-ignored` to check for false negatives and help calibrate triage accuracy."
+If last_review_ignored is older than the reminder threshold for the current level, append the reminder.
 
 ## Rules
 - Always read `reading-prefs.md` before evaluating
