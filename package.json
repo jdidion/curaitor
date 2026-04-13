@@ -1,0 +1,21 @@
+{
+  "name": "curaitor",
+  "version": "2.0.0",
+  "description": "AI-powered article discovery, triage, and interactive review",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx --watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["ai", "articles", "triage", "review", "claude"],
+  "author": "John Didion",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.6.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
