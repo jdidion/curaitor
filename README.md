@@ -324,6 +324,25 @@ curaitor is built around **Instapaper** but can be adapted:
 
 Any RSS/Atom/RDF feed URL works in `config/feeds.yaml`. Per-feed `user_agent` overrides supported. See `config/feeds.yaml.example`.
 
+#### Example: Social network links via Sill
+
+[Sill](https://sill.social/) aggregates links shared by people you follow on Bluesky and Mastodon. With Sill+, you get RSS feeds filtered by your interests — a great way to discover articles your network is talking about.
+
+Setup:
+1. Sign up for [Sill+](https://sill.social/) ($5/mo for premium features including RSS and custom notifications)
+2. Connect your Bluesky and/or Mastodon accounts
+3. Set up Custom Notifications with keyword filters matching your interests (e.g., genomics, bioinformatics, AI tools, variant calling, cfDNA)
+4. Copy the RSS feed URL from your Sill+ dashboard
+5. Add to `config/feeds.yaml`:
+
+```yaml
+- name: Sill Social Network Links
+  url: https://sill.social/rss/YOUR_FEED_ID
+  category: social
+```
+
+Sill articles will flow through `/cu:discover` like any other RSS feed, with three-tier routing based on your preferences.
+
 ## Architecture
 
 ```
@@ -364,7 +383,7 @@ curaitor/
 * Stephen Turner's guide: https://blog.stephenturner.us/p/staying-current-in-data-science-and-computational-biology-2026
 
 ### Sources
-- **Bluesky & Mastodon** — surface articles shared by your network on the fediverse, potentially via [Sill](https://sill.social/) (aggregates links shared across Bluesky and Mastodon)
+- **Bluesky & Mastodon** — via [Sill](https://sill.social/) RSS feeds (see setup example under RSS sources above)
 - **Semantic Scholar** — "more like this" recommendations seeded from your Zotero library
 - **PubMed E-utilities** — targeted searches by topic or author
 - **Gmail newsletters** — scan for article links in newsletter emails via Google MCP
