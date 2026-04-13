@@ -1,5 +1,7 @@
 # curaitor
 
+> Licensed under the [Elastic License 2.0](LICENSE.md). Free to use. See license for details.
+
 AI-powered article discovery, triage, and interactive review — built as a [Claude Code](https://claude.ai/claude-code) plugin.
 
 curaitor helps researchers and knowledge workers stay on top of their reading by automating the tedious parts of article discovery and triage while keeping the human in the loop for what matters: deciding what's worth reading and discussing it deeply.

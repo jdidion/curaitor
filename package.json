@@ -11,7 +11,7 @@
   },
   "keywords": ["ai", "articles", "triage", "review", "claude"],
   "author": "John Didion",
-  "license": "MIT",
+  "license": "Elastic-2.0",
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.6.0",
