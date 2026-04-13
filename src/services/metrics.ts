@@ -1,17 +1,7 @@
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import yaml from 'js-yaml';
-import { CONFIG } from '../config.js';
+import { getBackend } from '../storage/index.js';
+import type { AccuracyStats, RollingEntry } from '../storage/types.js';
 
-export interface AccuracyStats {
-  autonomy_level: number;
-  lifetime: {
-    instapaper: { tp: number; fp: number; tn: number; fn: number };
-    rss: { tp: number; fp: number; tn: number; fn: number };
-  };
-  rolling_window: Array<{ date: string; source: string; signal: string; title: string }>;
-  review_ignored_passes: number;
-  last_review_ignored: string | null;
-}
+export type { AccuracyStats } from '../storage/types.js';
 
 const LEVEL_NAMES: Record<number, string> = {
   0: 'Cold start',
@@ -21,23 +11,11 @@ const LEVEL_NAMES: Record<number, string> = {
 };
 
 export function loadStats(): AccuracyStats {
-  if (!existsSync(CONFIG.accuracyStats)) {
-    return {
-      autonomy_level: 0,
-      lifetime: {
-        instapaper: { tp: 0, fp: 0, tn: 0, fn: 0 },
-        rss: { tp: 0, fp: 0, tn: 0, fn: 0 },
-      },
-      rolling_window: [],
-      review_ignored_passes: 0,
-      last_review_ignored: null,
-    };
-  }
-  return yaml.load(readFileSync(CONFIG.accuracyStats, 'utf-8')) as AccuracyStats;
+  return getBackend().loadStats();
 }
 
 export function saveStats(stats: AccuracyStats): void {
-  writeFileSync(CONFIG.accuracyStats, yaml.dump(stats, { sortKeys: false }));
+  getBackend().saveStats(stats);
 }
 
 export interface Metrics {
@@ -107,7 +85,6 @@ export function addSignal(
     title,
   });
 
-  // Keep rolling window at max 50
   while (stats.rolling_window.length > 50) {
     stats.rolling_window.shift();
   }

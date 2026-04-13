@@ -1,13 +1,17 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { serveStatic } from '@hono/node-server/serve-static';
-import { PORT, VAULT_PATH } from './config.js';
+import { PORT } from './config.js';
+import { initBackend } from './storage/index.js';
 import dashboard from './routes/dashboard.js';
 import review from './routes/review.js';
 import read from './routes/read.js';
 import ignored from './routes/ignored.js';
 import recycle from './routes/recycle.js';
 import settings from './routes/settings.js';
+
+// Initialize storage backend before starting server
+initBackend();
 
 const app = new Hono();
 
@@ -22,5 +26,4 @@ app.route('/settings', settings);
 
 serve({ fetch: app.fetch, port: PORT }, (info) => {
   console.log(`Curaitor running at http://localhost:${info.port}`);
-  console.log(`Vault: ${VAULT_PATH}`);
 });

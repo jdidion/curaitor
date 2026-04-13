@@ -1,19 +1,15 @@
 import { Hono } from 'hono';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { CONFIG } from '../config.js';
+import { getBackend } from '../storage/index.js';
 import { layout } from '../views/layout.js';
+import type { ConfigKey } from '../storage/types.js';
 
 const app = new Hono();
 
-function readConfig(path: string): string {
-  if (!existsSync(path)) return '';
-  return readFileSync(path, 'utf-8');
-}
-
 app.get('/', (c) => {
-  const feeds = readConfig(CONFIG.feeds);
-  const prefs = readConfig(CONFIG.readingPrefs);
-  const rules = readConfig(CONFIG.triageRules);
+  const backend = getBackend();
+  const feeds = backend.readConfig('feeds');
+  const prefs = backend.readConfig('prefs');
+  const rules = backend.readConfig('rules');
 
   const content = `
     <div class="page-header"><h1>Settings</h1></div>
@@ -59,26 +55,20 @@ app.get('/', (c) => {
   return c.html(layout({ title: 'Settings', content, activeNav: 'settings' }));
 });
 
-app.post('/feeds', async (c) => {
-  const body = await c.req.parseBody();
-  writeFileSync(CONFIG.feeds, body['content'] as string);
-  c.header('HX-Trigger', 'configSaved');
-  return c.html('<div class="toast">Feeds saved</div>');
-});
+const CONFIG_MAP: Record<string, ConfigKey> = {
+  feeds: 'feeds',
+  prefs: 'prefs',
+  rules: 'rules',
+};
 
-app.post('/prefs', async (c) => {
-  const body = await c.req.parseBody();
-  writeFileSync(CONFIG.readingPrefs, body['content'] as string);
-  c.header('HX-Trigger', 'configSaved');
-  return c.html('<div class="toast">Preferences saved</div>');
-});
-
-app.post('/rules', async (c) => {
-  const body = await c.req.parseBody();
-  writeFileSync(CONFIG.triageRules, body['content'] as string);
-  c.header('HX-Trigger', 'configSaved');
-  return c.html('<div class="toast">Triage rules saved</div>');
-});
+for (const [route, key] of Object.entries(CONFIG_MAP)) {
+  app.post(`/${route}`, async (c) => {
+    const body = await c.req.parseBody();
+    getBackend().writeConfig(key, body['content'] as string);
+    c.header('HX-Trigger', 'configSaved');
+    return c.html(`<div class="toast">${route.charAt(0).toUpperCase() + route.slice(1)} saved</div>`);
+  });
+}
 
 function escapeHtml(str: string): string {
   return str
