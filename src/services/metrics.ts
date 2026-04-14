@@ -18,6 +18,9 @@ export function saveStats(stats: AccuracyStats): void {
   getBackend().saveStats(stats);
 }
 
+export const DEFAULT_MAX_FP_RATE = 0.05;
+export const DEFAULT_MAX_FN_RATE = 0.05;
+
 export interface Metrics {
   level: number;
   levelName: string;
@@ -27,6 +30,12 @@ export interface Metrics {
   rollingTotal: number;
   rollingPrecision: number;
   rollingRecall: number;
+  rollingFpRate: number;
+  rollingFnRate: number;
+  maxFpRate: number;
+  maxFnRate: number;
+  fpExceeded: boolean;
+  fnExceeded: boolean;
   reviewIgnoredPasses: number;
   lastReviewIgnored: string | null;
   lifetime: { tp: number; fp: number; tn: number; fn: number };
@@ -52,6 +61,10 @@ export function computeMetrics(stats: AccuracyStats): Metrics {
   const rwTotal = rw.tp + rw.fp + rw.tn + rw.fn;
   const rwPrecision = rw.tp + rw.fp > 0 ? rw.tp / (rw.tp + rw.fp) : 0;
   const rwRecall = rw.tp + rw.fn > 0 ? rw.tp / (rw.tp + rw.fn) : 0;
+  const rwFpRate = rwTotal > 0 ? rw.fp / rwTotal : 0;
+  const rwFnRate = rwTotal > 0 ? rw.fn / rwTotal : 0;
+  const maxFpRate = stats.max_fp_rate ?? DEFAULT_MAX_FP_RATE;
+  const maxFnRate = stats.max_fn_rate ?? DEFAULT_MAX_FN_RATE;
 
   return {
     level: stats.autonomy_level,
@@ -62,6 +75,12 @@ export function computeMetrics(stats: AccuracyStats): Metrics {
     rollingTotal: rwTotal,
     rollingPrecision: rwPrecision,
     rollingRecall: rwRecall,
+    rollingFpRate: rwFpRate,
+    rollingFnRate: rwFnRate,
+    maxFpRate,
+    maxFnRate,
+    fpExceeded: rwTotal >= 20 && rwFpRate > maxFpRate,
+    fnExceeded: rwTotal >= 20 && rwFnRate > maxFnRate,
     reviewIgnoredPasses: stats.review_ignored_passes,
     lastReviewIgnored: stats.last_review_ignored,
     lifetime: lt,

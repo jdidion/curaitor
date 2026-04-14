@@ -50,6 +50,8 @@ export interface RollingEntry {
 
 export interface AccuracyStats {
   autonomy_level: number;
+  max_fp_rate: number;           // max false positive rate before demotion (default 0.05)
+  max_fn_rate: number;           // max false negative rate before demotion (default 0.05)
   lifetime: {
     instapaper: SourceStats;
     rss: SourceStats;

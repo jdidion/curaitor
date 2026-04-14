@@ -13,6 +13,9 @@ app.get('/', (c) => {
   const prefs = backend.readConfig('prefs');
   const rules = backend.readConfig('rules');
   const jobs = loadCronJobs();
+  const stats = backend.loadStats();
+  const maxFpRate = stats.max_fp_rate ?? 0.05;
+  const maxFnRate = stats.max_fn_rate ?? 0.05;
 
   const cronRows = jobs.map((j) => `
     <div class="card" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
@@ -44,6 +47,7 @@ app.get('/', (c) => {
       <div x-data="{ tab: 'scheduling' }">
       <div class="tabs">
         <div class="tab" :class="tab === 'scheduling' && 'active'" @click="tab = 'scheduling'">Scheduling</div>
+        <div class="tab" :class="tab === 'thresholds' && 'active'" @click="tab = 'thresholds'">Thresholds</div>
         <div class="tab" :class="tab === 'feeds' && 'active'" @click="tab = 'feeds'">Feeds</div>
         <div class="tab" :class="tab === 'prefs' && 'active'" @click="tab = 'prefs'">Preferences</div>
         <div class="tab" :class="tab === 'rules' && 'active'" @click="tab = 'rules'">Triage Rules</div>
@@ -61,6 +65,30 @@ app.get('/', (c) => {
             <code>0 */2 * * *</code> (every 2h) &middot;
             <code>0 6 * * 1-5</code> (weekdays 6am)
           </div>
+        </div>
+
+        <div x-show="tab === 'thresholds'" style="display:none">
+          <div style="margin-bottom:16px;color:var(--text-muted);font-size:14px;">
+            Maximum error rates before the autonomy system demotes. Applied to the rolling window of the last 50 reviewed articles.
+          </div>
+          <form hx-post="/settings/thresholds" hx-swap="none" class="card" style="display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;align-items:center;gap:16px;">
+              <label style="width:200px;font-weight:500;">Max False Positive Rate</label>
+              <input type="number" name="max_fp_rate" value="${maxFpRate * 100}" min="0" max="100" step="0.1"
+                style="width:100px;padding:6px 10px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;text-align:right;" />
+              <span style="color:var(--text-muted);">% (articles wrongly sent to Review)</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <label style="width:200px;font-weight:500;">Max False Negative Rate</label>
+              <input type="number" name="max_fn_rate" value="${maxFnRate * 100}" min="0" max="100" step="0.1"
+                style="width:100px;padding:6px 10px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;text-align:right;" />
+              <span style="color:var(--text-muted);">% (articles wrongly Ignored)</span>
+            </div>
+            <div style="font-size:13px;color:var(--text-dim);">
+              With a rolling window of 50 articles, 5% = 2.5 articles. Demotion triggers when the rate exceeds the threshold and the window has at least 20 entries.
+            </div>
+            <div><button type="submit" class="btn btn-accent">Save Thresholds</button></div>
+          </form>
         </div>
 
         <div x-show="tab === 'feeds'" style="display:none">
@@ -111,6 +139,17 @@ for (const [route, key] of Object.entries(CONFIG_MAP)) {
     return c.html(`<div class="toast">${route.charAt(0).toUpperCase() + route.slice(1)} saved</div>`);
   });
 }
+
+// Threshold update
+app.post('/thresholds', async (c) => {
+  const body = await c.req.parseBody();
+  const stats = getBackend().loadStats();
+  stats.max_fp_rate = parseFloat(body['max_fp_rate'] as string) / 100;
+  stats.max_fn_rate = parseFloat(body['max_fn_rate'] as string) / 100;
+  getBackend().saveStats(stats);
+  c.header('HX-Trigger', 'configSaved');
+  return c.html('<div class="toast">Thresholds saved</div>');
+});
 
 // Cron schedule update
 app.post('/cron/:id', async (c) => {

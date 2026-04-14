@@ -4,23 +4,38 @@ import { join } from 'path';
 
 config();
 
+const HOME = process.env.HOME || process.env.USERPROFILE || '';
+
+/** Cross-platform Obsidian config paths */
+function obsidianConfigPaths(): string[] {
+  const paths = [];
+  if (process.env.OBSIDIAN_CONFIG) {
+    paths.push(process.env.OBSIDIAN_CONFIG);
+  }
+  // macOS
+  paths.push(join(HOME, 'Library/Application Support/obsidian/obsidian.json'));
+  // Linux
+  paths.push(join(HOME, '.config/obsidian/obsidian.json'));
+  // Windows (via APPDATA)
+  if (process.env.APPDATA) {
+    paths.push(join(process.env.APPDATA, 'obsidian/obsidian.json'));
+  }
+  return paths;
+}
+
 function findVault(): string {
-  // From env
   if (process.env.VAULT_PATH && existsSync(process.env.VAULT_PATH)) {
     return process.env.VAULT_PATH;
   }
 
-  // From Obsidian config
-  const obsidianConfig = join(
-    process.env.HOME || '',
-    'Library/Application Support/obsidian/obsidian.json'
-  );
-  if (existsSync(obsidianConfig)) {
+  // Try each platform's Obsidian config location
+  for (const configPath of obsidianConfigPaths()) {
+    if (!existsSync(configPath)) continue;
     let cfg: Record<string, unknown>;
     try {
-      cfg = JSON.parse(readFileSync(obsidianConfig, 'utf-8'));
+      cfg = JSON.parse(readFileSync(configPath, 'utf-8'));
     } catch {
-      throw new Error(`Could not parse Obsidian config at ${obsidianConfig}`);
+      continue;
     }
     const vaults = Object.values((cfg.vaults || {}) as Record<string, { path: string }>);
     const markers = ['Curaitor/Inbox', 'Curaitor/Review', 'Curaitor/Ignored'];
@@ -45,14 +60,17 @@ function findPluginDir(): string {
   if (process.env.PLUGIN_PATH && existsSync(process.env.PLUGIN_PATH)) {
     return process.env.PLUGIN_PATH;
   }
+
+  // Check common plugin cache locations
   const candidates = [
-    join(process.env.HOME || '', 'projects/claude-plugins/plugins/curaitor'),
-    join(process.env.HOME || '', '.claude/plugins/curaitor'),
+    join(HOME, '.claude/plugins/cache/jdidion-plugins/curaitor'),
+    join(HOME, '.claude/plugins/curaitor'),
   ];
   for (const c of candidates) {
     if (existsSync(join(c, 'config'))) return c;
   }
-  throw new Error('Could not find curaitor plugin. Set PLUGIN_PATH in .env');
+
+  throw new Error('Could not find CurAItor plugin directory. Set PLUGIN_PATH in .env');
 }
 
 export const VAULT_PATH = findVault();
