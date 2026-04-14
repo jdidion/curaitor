@@ -1,3 +1,4 @@
+import { esc } from '../lib/utils.js';
 import { Hono } from 'hono';
 import { listTopics, getTopic, createTopic, updateTopic, deleteTopic, getTopicLinks, removeLinkFromTopic } from '../services/topics.js';
 import { layout } from '../views/layout.js';
@@ -5,9 +6,6 @@ import type { Topic, Link } from '../storage/types.js';
 
 const app = new Hono();
 
-function esc(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
 
 function topicCard(topic: Topic): string {
   const tags = topic.tags.slice(0, 4).map((t) => `<span class="tag">${esc(t)}</span>`).join('');

@@ -3,6 +3,7 @@ import { listArticles, getArticle, deleteArticle } from '../services/vault.js';
 import { loadStats, saveStats, addSignal } from '../services/metrics.js';
 import { appendRecycle } from '../services/recycle.js';
 import { layout } from '../views/layout.js';
+import { esc, sanitizeId } from '../lib/utils.js';
 import { articleCard, articleDetail } from '../views/components.js';
 
 const VERDICTS = [
@@ -35,7 +36,8 @@ app.get('/', (c) => {
 });
 
 app.get('/:filename', (c) => {
-  const filename = c.req.param('filename');
+  const filename = sanitizeId(c.req.param('filename'));
+  if (!filename) return c.html('<p>Invalid filename</p>', 400);
   const article = getArticle('inbox', filename);
   if (!article) {
     return c.html('<p style="color:var(--text-muted);padding:20px">Article not found</p>', 404);
@@ -63,7 +65,8 @@ app.get('/:filename', (c) => {
 });
 
 app.post('/:filename/verdict', async (c) => {
-  const filename = c.req.param('filename');
+  const filename = sanitizeId(c.req.param('filename'));
+  if (!filename) return c.html('<p>Invalid filename</p>', 400);
   const body = await c.req.parseBody();
   const verdict = body['verdict'] as string;
   const article = getArticle('inbox', filename);
@@ -104,16 +107,9 @@ app.post('/:filename/verdict', async (c) => {
 
   c.header('HX-Trigger', 'verdictApplied');
   return c.html(`<p style="color:var(--green);padding:20px;text-align:center">
-    ${verdict === 'skip' ? 'Skipped' : `Applied verdict: ${verdict}`} &mdash; <em>${escapeHtml(article.title)}</em>
+    ${verdict === 'skip' ? 'Skipped' : `Applied verdict: ${verdict}`} &mdash; <em>${esc(article.title)}</em>
   </p>`);
 });
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 export default app;

@@ -4,15 +4,12 @@ import { loadStats, saveStats, addSignal } from '../services/metrics.js';
 import { appendRecycle } from '../services/recycle.js';
 import { isLikelySlop } from '../services/slop-detector.js';
 import { layout } from '../views/layout.js';
-import { sanitizeId } from '../lib/utils.js';
+import { esc, sanitizeId } from '../lib/utils.js';
 import type { Article } from '../storage/types.js';
 
 const app = new Hono();
 const GROUP_THRESHOLD = 20;
 
-function esc(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
 
 function sourceKey(source: string): 'instapaper' | 'rss' {
   return source === 'instapaper' ? 'instapaper' : 'rss';
@@ -253,7 +250,9 @@ app.post('/batch', async (c) => {
   let processed = 0;
 
   for (const filename of filenames) {
-    const article = getArticle('review', filename);
+    const safe = sanitizeId(filename);
+    if (!safe) continue;
+    const article = getArticle("review", safe);
     if (!article) continue;
     applyVerdict(verdict, article, stats, body.topic as string);
     processed++;

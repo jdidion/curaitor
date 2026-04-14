@@ -1,3 +1,4 @@
+import { esc } from '../lib/utils.js';
 import { Hono } from 'hono';
 import { listLinks, getLink, createLink, deleteLink, linkCount } from '../services/links.js';
 import { listTopics, addLinkToTopic } from '../services/topics.js';
@@ -6,9 +7,6 @@ import type { Link, LinkType, LinkBackend } from '../storage/types.js';
 
 const app = new Hono();
 
-function esc(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
 
 const TYPE_ICONS: Record<string, string> = {
   paper: 'paper',

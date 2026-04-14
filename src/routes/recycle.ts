@@ -1,3 +1,4 @@
+import { esc } from '../lib/utils.js';
 import { Hono } from 'hono';
 import { loadRecycle, clearRecycle } from '../services/recycle.js';
 import { layout } from '../views/layout.js';
@@ -11,8 +12,8 @@ app.get('/', (c) => {
     ? entries
         .map(
           (e) => `<div class="article-item">
-            <div class="title"><a href="${escapeHtml(e.url)}" target="_blank" rel="noopener">${escapeHtml(e.title)}</a></div>
-            <div class="meta">${escapeHtml(e.category)}${e.isDuplicate ? ' &middot; duplicate' : ''}</div>
+            <div class="title"><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a></div>
+            <div class="meta">${esc(e.category)}${e.isDuplicate ? ' &middot; duplicate' : ''}</div>
           </div>`,
         )
         .join('')
@@ -39,12 +40,5 @@ app.post('/clear', (c) => {
   return c.html('');
 });
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 export default app;

@@ -1,3 +1,4 @@
+import { esc } from '../lib/utils.js';
 import type { Article } from '../lib/frontmatter.js';
 
 export function statCard(opts: {
@@ -170,10 +171,3 @@ export function groupedList(
     .join('\n');
 }
 
-function esc(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}

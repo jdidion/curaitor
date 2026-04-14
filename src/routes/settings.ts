@@ -1,3 +1,4 @@
+import { esc } from '../lib/utils.js';
 import { Hono } from 'hono';
 import { getBackend } from '../storage/index.js';
 import { loadCronJobs, updateCronJob } from '../services/cron.js';
@@ -135,12 +136,5 @@ app.post('/cron/:id/toggle', async (c) => {
   return c.html(`<div class="toast">${id} ${job?.enabled ? 'disabled' : 'enabled'}</div>`);
 });
 
-function esc(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 export default app;

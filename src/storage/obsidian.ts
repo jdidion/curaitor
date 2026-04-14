@@ -205,19 +205,32 @@ export class ObsidianBackend implements StorageBackend {
 
     return readdirSync(dir)
       .filter((f) => f.endsWith('.md') && !f.startsWith('.'))
-      .map((f) => {
-        const content = readFileSync(join(dir, f), 'utf-8');
-        const relPath = relative(this.vaultPath, join(dir, f));
-        return parseArticle(content, f, relPath, folder);
-      })
+      .reduce<Article[]>((acc, f) => {
+        try {
+          const content = readFileSync(join(dir, f), 'utf-8');
+          const relPath = relative(this.vaultPath, join(dir, f));
+          acc.push(parseArticle(content, f, relPath, folder));
+        } catch (err) {
+          console.warn(`Skipping malformed article ${f}: ${(err as Error).message}`);
+        }
+        return acc;
+      }, [])
       .sort((a, b) => (b.dateTriaged || '').localeCompare(a.dateTriaged || ''));
   }
 
   getArticle(folder: FolderName, id: string): Article | null {
     const filepath = join(this.folders[folder], id);
     if (!existsSync(filepath)) return null;
-    const content = readFileSync(filepath, 'utf-8');
-    return parseArticle(content, id, relative(this.vaultPath, filepath), folder);
+    let content: string;
+    try {
+      content = readFileSync(filepath, 'utf-8');
+    } catch { return null; }
+    try {
+      return parseArticle(content, id, relative(this.vaultPath, filepath), folder);
+    } catch (err) {
+      console.warn(`Malformed article ${id}: ${(err as Error).message}`);
+      return null;
+    }
   }
 
   createArticle(folder: FolderName, article: Partial<Article>): Article {

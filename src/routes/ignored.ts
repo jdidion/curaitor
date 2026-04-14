@@ -2,7 +2,8 @@ import { Hono } from 'hono';
 import { listArticles, getArticle, moveArticle, deleteArticle } from '../services/vault.js';
 import { loadStats, saveStats, addSignal } from '../services/metrics.js';
 import { appendRecycle } from '../services/recycle.js';
-import { layout } from '../views/layout.js';
+import { layout } from "../views/layout.js";
+import { esc, sanitizeId } from "../lib/utils.js";
 import { groupedList } from '../views/components.js';
 
 const app = new Hono();
@@ -59,7 +60,8 @@ app.post('/confirm-category', async (c) => {
 });
 
 app.post('/:filename/rescue', async (c) => {
-  const filename = c.req.param('filename');
+  const filename = sanitizeId(c.req.param('filename'));
+  if (!filename) return c.html('<p>Invalid filename</p>', 400);
   const article = getArticle('ignored', filename);
 
   if (!article) {
