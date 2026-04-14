@@ -89,10 +89,10 @@ app.get('/', (c) => {
         ${stats.rolling_window.slice(-10).reverse().map((e) => {
           const colors: Record<string, string> = { tp: 'var(--green)', fp: 'var(--red)', tn: 'var(--blue)', fn: 'var(--yellow)' };
           return `<div class="article-item">
-            <div class="title">${escape(e.title)}</div>
+            <div class="title">${esc(e.title)}</div>
             <div class="meta">
-              <span style="color:${colors[e.signal] || 'var(--text-muted)'};font-weight:600">${e.signal.toUpperCase()}</span>
-              &middot; ${e.source} &middot; ${e.date}
+              <span style="color:${colors[e.signal] || 'var(--text-muted)'};font-weight:600">${esc(e.signal.toUpperCase())}</span>
+              &middot; ${esc(e.source)} &middot; ${esc(e.date)}
             </div>
           </div>`;
         }).join('')}
@@ -103,8 +103,8 @@ app.get('/', (c) => {
   return c.html(layout({ title: 'Dashboard', content, activeNav: 'dashboard' }));
 });
 
-function escape(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
+import { esc } from '../lib/utils.js';
+
+// CRITICAL FIX: use shared escape that handles all HTML chars
 
 export default app;

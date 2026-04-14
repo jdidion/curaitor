@@ -50,7 +50,7 @@ export function layout(opts: {
     ${content}
   </main>
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
 </body>
 </html>`;
 }

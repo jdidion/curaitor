@@ -75,7 +75,12 @@ export function addSignal(
   signal: 'tp' | 'fp' | 'tn' | 'fn',
   title: string
 ): void {
-  const src = stats.lifetime[source] || stats.lifetime.rss;
+  const src = stats.lifetime[source];
+  if (!src) {
+    console.warn(`Unknown signal source: ${source}, defaulting to rss`);
+    stats.lifetime.rss[signal]++;
+    return;
+  }
   src[signal]++;
 
   stats.rolling_window.push({
@@ -85,6 +90,9 @@ export function addSignal(
     title,
   });
 
+  // SAFETY: read-modify-write is safe only because Node.js event loop
+  // guarantees synchronous code runs atomically. Do NOT convert to async
+  // without adding a lock.
   while (stats.rolling_window.length > 50) {
     stats.rolling_window.shift();
   }

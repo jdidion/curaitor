@@ -83,10 +83,13 @@ export function detectSlop(text: string, opts?: { hasSourceLink?: boolean }): Sl
 
   let score = 0;
 
-  // --- Tier 1 vocabulary ---
+  // --- Tier 1 vocabulary (word-boundary matching to avoid false positives) ---
   let tier1Count = 0;
   for (const word of TIER1_WORDS) {
-    if (lower.includes(word)) {
+    const regex = word.includes(' ')
+      ? new RegExp(word, 'i')  // multi-word phrases use simple includes
+      : new RegExp(`\\b${word}\\b`, 'i');  // single words use word boundaries
+    if (regex.test(text)) {
       tier1Count++;
       if (tier1Count <= 3) {
         signals.push({ type: 'vocabulary', detail: word, severity: 'high' });
@@ -95,10 +98,10 @@ export function detectSlop(text: string, opts?: { hasSourceLink?: boolean }): Sl
   }
   score += Math.min(tier1Count * 0.08, 0.4);
 
-  // --- Tier 2 clusters ---
+  // --- Tier 2 clusters (word-boundary matching) ---
   let tier2Count = 0;
   for (const word of TIER2_WORDS) {
-    if (lower.includes(word)) tier2Count++;
+    if (new RegExp(`\\b${word}\\b`, 'i').test(text)) tier2Count++;
   }
   if (tier2Count >= 3) {
     score += Math.min((tier2Count - 2) * 0.05, 0.2);

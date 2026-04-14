@@ -16,8 +16,13 @@ function findVault(): string {
     'Library/Application Support/obsidian/obsidian.json'
   );
   if (existsSync(obsidianConfig)) {
-    const cfg = JSON.parse(readFileSync(obsidianConfig, 'utf-8'));
-    const vaults = Object.values(cfg.vaults || {}) as Array<{ path: string }>;
+    let cfg: Record<string, unknown>;
+    try {
+      cfg = JSON.parse(readFileSync(obsidianConfig, 'utf-8'));
+    } catch {
+      throw new Error(`Could not parse Obsidian config at ${obsidianConfig}`);
+    }
+    const vaults = Object.values((cfg.vaults || {}) as Record<string, { path: string }>);
     const markers = ['Curaitor/Inbox', 'Curaitor/Review', 'Curaitor/Ignored'];
 
     let best = '';

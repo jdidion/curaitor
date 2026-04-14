@@ -4,6 +4,7 @@ import { loadStats, saveStats, addSignal } from '../services/metrics.js';
 import { appendRecycle } from '../services/recycle.js';
 import { isLikelySlop } from '../services/slop-detector.js';
 import { layout } from '../views/layout.js';
+import { sanitizeId } from '../lib/utils.js';
 import type { Article } from '../storage/types.js';
 
 const app = new Hono();
@@ -216,14 +217,17 @@ app.get('/', (c) => {
 });
 
 app.get('/:filename', (c) => {
-  const article = getArticle('review', c.req.param('filename'));
+  const filename = sanitizeId(c.req.param('filename'));
+  if (!filename) return c.html('<p>Invalid filename</p>', 400);
+  const article = getArticle('review', filename);
   if (!article) return c.html('<p>Article not found</p>', 404);
   return c.html(renderDetail(article));
 });
 
 // Single article verdict
 app.post('/:filename/verdict', async (c) => {
-  const filename = c.req.param('filename');
+  const filename = sanitizeId(c.req.param('filename'));
+  if (!filename) return c.html('<p>Invalid filename</p>', 400);
   const body = await c.req.parseBody();
   const verdict = (body.verdict as string) || 'skip';
   const article = getArticle('review', filename);
