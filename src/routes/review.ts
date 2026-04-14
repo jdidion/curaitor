@@ -10,7 +10,6 @@ import type { Article } from '../storage/types.js';
 const app = new Hono();
 const GROUP_THRESHOLD = 20;
 
-
 function sourceKey(source: string): 'instapaper' | 'rss' {
   return source === 'instapaper' ? 'instapaper' : 'rss';
 }
@@ -254,7 +253,7 @@ app.post('/batch', async (c) => {
     if (!safe) continue;
     const article = getArticle("review", safe);
     if (!article) continue;
-    applyVerdict(verdict, article, stats, body.topic as string);
+    applyVerdict(verdict, article, stats);
     processed++;
   }
 
@@ -274,7 +273,7 @@ app.post('/batch', async (c) => {
   return c.html(renderFlatView(remaining));
 });
 
-function applyVerdict(verdict: string, article: Article, stats: ReturnType<typeof loadStats>, topic?: string): void {
+function applyVerdict(verdict: string, article: Article, stats: ReturnType<typeof loadStats>): void {
   const src = sourceKey(article.source);
 
   switch (verdict) {

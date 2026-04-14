@@ -1,5 +1,5 @@
 import { getBackend } from '../storage/index.js';
-import type { AccuracyStats, RollingEntry } from '../storage/types.js';
+import type { AccuracyStats } from '../storage/types.js';
 
 export type { AccuracyStats } from '../storage/types.js';
 
@@ -90,14 +90,10 @@ export function addSignal(
     title,
   });
 
-  // SAFETY: read-modify-write is safe only because Node.js event loop
-  // guarantees synchronous code runs atomically. Do NOT convert to async
-  // without adding a lock.
-  while (stats.rolling_window.length > 50) {
-    stats.rolling_window.shift();
+  // Trim to rolling window size. Read-modify-write is safe here because
+  // synchronous code runs atomically in Node's event loop.
+  if (stats.rolling_window.length > 50) {
+    stats.rolling_window = stats.rolling_window.slice(-50);
   }
 }
 
-export function levelName(level: number): string {
-  return LEVEL_NAMES[level] || 'Unknown';
-}

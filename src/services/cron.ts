@@ -67,31 +67,16 @@ export function loadCronJobs(): CronJob[] {
   const lines = crontab.split('\n');
 
   return DEFAULTS.map((def) => {
-    // Find matching line in crontab
-    const cronLine = lines.find((l) => l.includes(`/cu:${def.id}`) && !l.startsWith('#'));
+    const activeLine = lines.find((l) => l.includes(`/cu:${def.id}`) && !l.startsWith('#'));
     const disabledLine = lines.find((l) => l.includes(`/cu:${def.id}`) && l.startsWith('#') && !l.startsWith('# curaitor'));
+    const rawLine = activeLine ?? disabledLine?.replace(/^#\s*/, '');
+    const parsed = rawLine ? parseCronLine(rawLine) : null;
 
-    if (cronLine) {
-      const parsed = parseCronLine(cronLine);
-      return {
-        ...def,
-        schedule: parsed?.schedule || DEFAULT_SCHEDULES[def.id],
-        enabled: true,
-      };
-    } else if (disabledLine) {
-      const parsed = parseCronLine(disabledLine.replace(/^#\s*/, ''));
-      return {
-        ...def,
-        schedule: parsed?.schedule || DEFAULT_SCHEDULES[def.id],
-        enabled: false,
-      };
-    } else {
-      return {
-        ...def,
-        schedule: DEFAULT_SCHEDULES[def.id],
-        enabled: false,
-      };
-    }
+    return {
+      ...def,
+      schedule: parsed?.schedule || DEFAULT_SCHEDULES[def.id],
+      enabled: !!activeLine,
+    };
   });
 }
 

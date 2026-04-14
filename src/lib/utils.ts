@@ -15,6 +15,3 @@ export function sanitizeId(name: string): string | null {
   }
   return name;
 }
-
-/** Rolling window size for accuracy metrics */
-export const ROLLING_WINDOW_SIZE = 50;

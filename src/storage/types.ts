@@ -1,7 +1,5 @@
 export type FolderName = 'inbox' | 'review' | 'ignored' | 'archive' | 'library' | 'topics';
 export type ConfigKey = 'feeds' | 'prefs' | 'rules' | 'accuracyStats';
-export type SignalType = 'tp' | 'fp' | 'tn' | 'fn';
-
 export interface Article {
   id: string;                  // filename (obsidian) or UUID (sqlite)
   filename: string;            // same as id — kept for route/component compatibility

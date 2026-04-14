@@ -1,5 +1,5 @@
 import { esc } from '../lib/utils.js';
-import type { Article } from '../lib/frontmatter.js';
+import type { Article } from '../storage/types.js';
 
 export function statCard(opts: {
   value: number | string;

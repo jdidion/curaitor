@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { allFolderCounts } from '../services/vault.js';
 import { loadStats, computeMetrics } from '../services/metrics.js';
 import { recycleCount } from '../services/recycle.js';
+import { esc } from '../lib/utils.js';
 import { layout } from '../views/layout.js';
 
 const app = new Hono();
@@ -102,9 +103,5 @@ app.get('/', (c) => {
 
   return c.html(layout({ title: 'Dashboard', content, activeNav: 'dashboard' }));
 });
-
-import { esc } from '../lib/utils.js';
-
-// CRITICAL FIX: use shared escape that handles all HTML chars
 
 export default app;
