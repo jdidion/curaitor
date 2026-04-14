@@ -29,5 +29,5 @@ app.route('/topics', topics);
 app.route('/settings', settings);
 
 serve({ fetch: app.fetch, port: PORT }, (info) => {
-  console.log(`Curaitor running at http://localhost:${info.port}`);
+  console.log(`CurAItor running at http://localhost:${info.port}`);
 });

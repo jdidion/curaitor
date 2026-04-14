@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/logo.svg" alt="Curaitor" width="80" height="80">
+  <img src="public/logo.svg" alt="CurAItor" width="80" height="80">
 </p>
 
 <h1 align="center">CurAItor</h1>
@@ -15,7 +15,7 @@
 
 ---
 
-![Curaitor Dashboard](public/screenshot-dashboard.png)
+![CurAItor Dashboard](public/screenshot-dashboard.png)
 
 ## What is CurAItor?
 
