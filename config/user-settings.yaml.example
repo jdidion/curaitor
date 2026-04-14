@@ -3,7 +3,7 @@
 
 # Default Slack channel for the "p" (post) command
 # Can be a channel name or user ID (for DMs)
-default_slack_channel: "#ai-general"
+default_slack_channel: "#cool-ai-stuff"
 
 # Custom bookmark command (optional)
 # If set, "b" (bookmark) runs this instead of writing to Obsidian Bookmarks.md
