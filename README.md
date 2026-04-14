@@ -55,7 +55,15 @@ CurAItor helps researchers and knowledge workers stay on top of their reading. I
 
 ## Quick Start
 
-### Web App
+### One-line install (macOS / Linux)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jdidion/curaitor/main/install.sh | bash
+```
+
+Interactive setup walks you through storage backend, vault path, and port. Creates a `curaitor` command in `~/.local/bin/`.
+
+### Manual install
 
 ```bash
 git clone https://github.com/jdidion/curaitor.git
