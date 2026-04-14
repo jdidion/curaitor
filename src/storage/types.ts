@@ -20,6 +20,8 @@ export interface Article {
   reviewedIgnored?: string;
   reviewDecision?: string;
   autonomyLevel?: number;
+  slopScore?: number;          // 0-1 from slop detector
+  slopLabel?: string;          // clean|mild|slop|heavy-slop
   summary: string;
   whyReview: string;
   verdictText: string;

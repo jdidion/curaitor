@@ -2,8 +2,9 @@ import { Hono } from 'hono';
 import { listArticles, getArticle, moveArticle, deleteArticle } from '../services/vault.js';
 import { loadStats, saveStats, addSignal } from '../services/metrics.js';
 import { appendRecycle } from '../services/recycle.js';
+import { isLikelySlop } from '../services/slop-detector.js';
 import { layout } from '../views/layout.js';
-import type { Article } from '../lib/frontmatter.js';
+import type { Article } from '../storage/types.js';
 
 const app = new Hono();
 const GROUP_THRESHOLD = 20;
@@ -58,11 +59,27 @@ function groupArticles(articles: Article[]): { groups: ArticleGroup[]; standalon
 
 // --- Rendering ---
 
+function slopBadge(article: Article): string {
+  const result = isLikelySlop(article.title, article.summary, article.url);
+  if (result.label === 'clean') return '';
+  const colors: Record<string, string> = {
+    'mild': 'var(--yellow)',
+    'slop': 'var(--red)',
+    'heavy-slop': '#ff2222',
+  };
+  const color = colors[result.label] || 'var(--text-muted)';
+  const signals = result.signals.slice(0, 3).map((s) => s.detail).join(', ');
+  return `<span class="tag" style="background:${color};color:white;font-weight:600;" title="${esc(signals)}">
+    SLOP ${Math.round(result.score * 100)}%
+  </span>`;
+}
+
 function renderDetail(article: Article): string {
   const tags = article.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join(' ');
   const fn = encodeURIComponent(article.filename);
+  const slop = slopBadge(article);
   return `
-    <h1>${esc(article.title)}</h1>
+    <h1>${esc(article.title)} ${slop}</h1>
     <div class="meta-row">
       <span>${esc(article.source || 'unknown')}</span>
       <span>${esc(article.category)}</span>
@@ -158,8 +175,9 @@ function renderFlatView(articles: Article[]): string {
   const list = articles.map((a) => {
     const tags = a.tags.slice(0, 3).map((t) => `<span class="tag">${esc(t)}</span>`).join('');
     const fn = encodeURIComponent(a.filename);
+    const slop = slopBadge(a);
     return `<div class="article-item" hx-get="/review/${fn}" hx-target="#article-detail" hx-swap="innerHTML">
-      <div class="title">${esc(a.title)}</div>
+      <div class="title">${esc(a.title)} ${slop}</div>
       <div class="meta">${a.source || 'unknown'} &middot; ${a.category} &middot; ${a.dateTriaged}</div>
       <div>${tags}</div>
     </div>`;
