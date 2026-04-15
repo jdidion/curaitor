@@ -1,7 +1,7 @@
 import { esc } from '../lib/utils.js';
 import { Hono } from 'hono';
 import { getBackend } from '../storage/index.js';
-import { loadCronJobs, updateCronJob } from '../services/cron.js';
+import { loadCronJobs, updateCronJob, getCronHealth, verifyCronEnvironment } from '../services/cron.js';
 import { layout } from '../views/layout.js';
 import type { ConfigKey } from '../storage/types.js';
 
@@ -13,6 +13,8 @@ app.get('/', (c) => {
   const prefs = backend.readConfig('prefs');
   const rules = backend.readConfig('rules');
   const jobs = loadCronJobs();
+  const health = getCronHealth();
+  const verify = verifyCronEnvironment();
   const stats = backend.loadStats();
   const maxFpRate = stats.max_fp_rate ?? 0.05;
   const maxFnRate = stats.max_fn_rate ?? 0.05;
@@ -55,8 +57,20 @@ app.get('/', (c) => {
 
       <div>
         <div x-show="tab === 'scheduling'">
+          <div class="card" style="margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+            <span style="font-size:20px;">${verify.ok ? '&#9679;' : '&#9888;'}</span>
+            <div>
+              <div style="font-weight:500;color:${verify.ok ? 'var(--green)' : 'var(--red)'};">
+                ${verify.ok ? 'Claude found' : 'Claude not found'}
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);">
+                ${health.claudePath ? esc(health.claudePath) : 'Not in PATH — cron jobs will fail'}
+              </div>
+            </div>
+          </div>
           <div style="margin-bottom:16px;color:var(--text-muted);font-size:14px;">
             Cron jobs for unattended article processing. Schedules use standard cron syntax.
+            Logs capped at 200 lines per run.
           </div>
           ${cronRows}
           <div style="margin-top:16px;font-size:13px;color:var(--text-dim);">
