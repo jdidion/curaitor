@@ -97,7 +97,8 @@ app.post('/:filename/verdict', async (c) => {
     case 'n':
       appendRecycle(article.title, article.url);
       deleteArticle('inbox', filename);
-      addSignal(stats, source, 'fp', article.title);
+      // Not a triage signal — article was correctly routed to Inbox,
+      // user just doesn't want to keep it after reading.
       break;
     case 'skip':
       break;
