@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { listArticles, getArticle, moveArticle, deleteArticle } from '../services/vault.js';
 import { loadStats, saveStats, addSignal } from '../services/metrics.js';
 import { appendRecycle } from '../services/recycle.js';
+import { listTopics } from '../services/topics.js';
 import { isLikelySlop } from '../services/slop-detector.js';
 import { layout } from '../views/layout.js';
 import { esc, sanitizeId } from '../lib/utils.js';
@@ -71,6 +72,28 @@ function slopBadge(article: Article): string {
   </span>`;
 }
 
+function topicPicker(fn: string): string {
+  const topics = listTopics();
+  if (topics.length === 0) {
+    return `<button class="verdict-btn" hx-post="/review/${fn}/verdict" hx-vals='{"verdict":"t"}' hx-target="#article-detail"><span class="key">t</span> Topic</button>`;
+  }
+  const options = topics
+    .map((t) => `<option value="${esc(t.id)}">${esc(t.name)} (${t.linkCount})</option>`)
+    .join('');
+  return `
+    <span style="display:inline-flex;align-items:center;gap:4px;">
+      <select id="topic-select-${fn}" style="padding:5px 8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);max-width:180px;">
+        <option value="">+ New topic...</option>
+        ${options}
+      </select>
+      <button class="verdict-btn" onclick="
+        var sel = document.getElementById('topic-select-${fn}');
+        var val = sel.value;
+        htmx.ajax('POST', '/review/${fn}/verdict', {target:'#article-detail', swap:'innerHTML', values:{verdict:'t', topic: val}});
+      "><span class="key">t</span> Add</button>
+    </span>`;
+}
+
 function renderDetail(article: Article): string {
   const tags = article.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join(' ');
   const fn = encodeURIComponent(article.filename);
@@ -90,7 +113,7 @@ function renderDetail(article: Article): string {
     <div class="verdict-bar">
       <button class="verdict-btn primary" hx-post="/review/${fn}/verdict" hx-vals='{"verdict":"y"}' hx-target="#article-detail"><span class="key">y</span> Inbox</button>
       <button class="verdict-btn" hx-post="/review/${fn}/verdict" hx-vals='{"verdict":"n"}' hx-target="#article-detail"><span class="key">n</span> Recycle</button>
-      <button class="verdict-btn" hx-post="/review/${fn}/verdict" hx-vals='{"verdict":"t"}' hx-target="#article-detail"><span class="key">t</span> Topic</button>
+      ${topicPicker(fn)}
       <button class="verdict-btn" hx-post="/review/${fn}/verdict" hx-vals='{"verdict":"c"}' hx-target="#article-detail"><span class="key">c</span> Clip</button>
       <button class="verdict-btn" hx-post="/review/${fn}/verdict" hx-vals='{"verdict":"b"}' hx-target="#article-detail"><span class="key">b</span> Bookmark</button>
       <button class="verdict-btn" hx-post="/review/${fn}/verdict" hx-vals='{"verdict":"skip"}' hx-target="#article-detail"><span class="key">s</span> Skip</button>
