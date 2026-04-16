@@ -298,6 +298,9 @@ app.post('/batch', async (c) => {
 
 function applyVerdict(verdict: string, article: Article, stats: ReturnType<typeof loadStats>): void {
   const src = sourceKey(article.source);
+  // If article was rescued from Ignored (Ignored→Review→Ignored path),
+  // recycling it is a TN (triage was right to ignore), not an FP.
+  const wasRescued = article.confidence === 'high-not-interested' || !!article.reviewedIgnored;
 
   switch (verdict) {
     case 'y':
@@ -307,7 +310,7 @@ function applyVerdict(verdict: string, article: Article, stats: ReturnType<typeo
     case 'n':
       appendRecycle(article.title, article.url);
       deleteArticle('review', article.filename);
-      addSignal(stats, src, 'fp', article.title);
+      addSignal(stats, src, wasRescued ? 'tn' : 'fp', article.title);
       break;
     case 't':
     case 'c':

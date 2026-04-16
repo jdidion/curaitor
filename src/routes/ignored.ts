@@ -71,8 +71,12 @@ app.post('/:filename/rescue', async (c) => {
   const source: 'instapaper' | 'rss' = article.source === 'instapaper' ? 'instapaper' : 'rss';
   const stats = loadStats();
 
+  // If article was originally routed to Review then moved to Ignored
+  // (Review→Ignored→Review path), rescuing is a TP (triage was right
+  // to flag it initially), not an FN.
+  const wasInReview = article.confidence === 'uncertain';
   moveArticle('ignored', 'review', filename);
-  addSignal(stats, source, 'fn', article.title);
+  addSignal(stats, source, wasInReview ? 'tp' : 'fn', article.title);
   saveStats(stats);
 
   return c.html('');
