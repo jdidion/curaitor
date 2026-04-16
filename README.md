@@ -109,6 +109,18 @@ Cron jobs for unattended triage and discovery are managed from the Settings page
 0 6 * * * cd /path/to/workspace && claude -p "/cu:discover" --permission-mode bypassPermissions
 ```
 
+**Cron environment**: The app auto-detects the `claude` binary path and sets `SHELL`, `PATH`, and `HOME` in the crontab. If jobs fail with "command not found", check Settings > Scheduling for the health indicator.
+
+**Authentication for scheduled jobs**: Cron-triggered Claude sessions need valid API credentials. How this works depends on your provider:
+
+| Provider | Credential | Expiry | Cron solution |
+|----------|-----------|--------|---------------|
+| **Anthropic API** | `ANTHROPIC_API_KEY` | Never | Set in crontab env. No action needed. |
+| **AWS Bedrock** | SSO token | 8-12h | Refresh `aws sso login` manually each day, or create a dedicated IAM user with static keys scoped to Bedrock invoke only. |
+| **Google Vertex** | Service account JSON | Never | Set `GOOGLE_APPLICATION_CREDENTIALS` in crontab env. |
+
+For AWS Bedrock users: SSO tokens expire and `aws sso login` is interactive, so it can't run from cron. The pragmatic options are (a) refresh SSO manually as part of your morning routine (covers 2-3 triage runs), or (b) create a narrow IAM user with only `bedrock:InvokeModel` permission and use static keys for cron.
+
 ### RSS Feeds
 
 Add feeds to `config/feeds.yaml` or import from OPML:
