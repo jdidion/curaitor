@@ -39,7 +39,7 @@ export function layout(opts: {
 <body>
   <nav>
     <a class="logo" href="/">
-      <img src="/public/logo.svg" alt="CurAItor">
+      <img src="/public/logo.png" alt="CurAItor">
       <span>CurAItor</span>
     </a>
     <div style="display:flex;gap:24px;align-items:center;">

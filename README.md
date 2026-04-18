@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/logo.svg" alt="CurAItor" width="80" height="80">
+  <img src="public/logo-white-bg.png" alt="CurAItor" width="180">
 </p>
 
 <h1 align="center">CurAItor</h1>
