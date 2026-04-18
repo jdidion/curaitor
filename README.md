@@ -1,17 +1,16 @@
-<p align="center">
-  <img src="public/logo.png" alt="CurAItor" width="180">
-</p>
+<img src="public/logo.png" alt="CurAItor" width="280" align="left"/>
 
-<h1 align="center">CurAItor</h1>
+# CurAItor
 
-<p align="center">
-  AI-powered article discovery, triage, and review<br>
-  <em>A web app + <a href="https://claude.ai/claude-code">Claude Code</a> plugin for researchers who read too much</em>
-</p>
+*Filter the feed. Keep the signal.*
 
-<p align="center">
-  <a href="LICENSE.md">Elastic License 2.0</a>
-</p>
+<br clear="left"/>
+
+---
+
+AI-powered article discovery, triage, and review. A web app + [Claude Code](https://claude.ai/claude-code) plugin for researchers who read too much.
+
+[Elastic License 2.0](LICENSE.md)
 
 ---
 
