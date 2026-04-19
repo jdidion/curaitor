@@ -1,8 +1,10 @@
 import { esc } from '../lib/utils.js';
 import { Hono } from 'hono';
 import { listTopics, getTopic, createTopic, updateTopic, deleteTopic, getTopicLinks, removeLinkFromTopic } from '../services/topics.js';
+import { exportTopic } from '../services/export.js';
 import { layout } from '../views/layout.js';
 import type { Topic, Link } from '../storage/types.js';
+import os from 'node:os';
 
 const app = new Hono();
 
@@ -80,6 +82,8 @@ app.get('/:id', (c) => {
       <h1>${esc(topic.name)}</h1>
       <div style="display:flex;gap:8px;">
         <a href="/topics" class="btn btn-sm">Back</a>
+        <a class="btn btn-sm" href="/topics/${encodeURIComponent(id)}/export" title="Export topic + links as .ckt bundle">Export</a>
+        <a class="btn btn-sm" href="/topics/${encodeURIComponent(id)}/export?withArticles=1" title="Export bundle including article bodies">Export +articles</a>
         <button class="btn btn-sm btn-danger" hx-delete="/topics/${encodeURIComponent(id)}" hx-confirm="Delete this topic and unlink all articles?">Delete</button>
       </div>
     </div>
@@ -116,6 +120,30 @@ app.delete('/:id', (c) => {
 app.post('/:id/unlink/:linkId', (c) => {
   removeLinkFromTopic(c.req.param('linkId'), c.req.param('id'));
   return c.html('');
+});
+
+app.get('/:id/export', (c) => {
+  const id = c.req.param('id');
+  const topic = getTopic(id);
+  if (!topic) return c.text('Topic not found', 404);
+
+  const withArticles = c.req.query('withArticles') === '1';
+  const toParam = c.req.query('to') ?? '*';
+  const fromParam = c.req.query('from') ?? os.userInfo().username;
+
+  try {
+    const { bytes, filename } = exportTopic(id, {
+      from: fromParam,
+      to: toParam,
+      withArticles,
+      exportedBy: fromParam,
+    });
+    c.header('Content-Type', 'application/zip');
+    c.header('Content-Disposition', `attachment; filename="${filename}"`);
+    return c.body(bytes as unknown as ArrayBuffer);
+  } catch (e) {
+    return c.text(`Export failed: ${(e as Error).message}`, 500);
+  }
 });
 
 export default app;

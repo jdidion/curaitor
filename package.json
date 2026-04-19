@@ -20,6 +20,7 @@
   "author": "John Didion",
   "license": "Elastic-2.0",
   "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
     "@types/better-sqlite3": "^7.6.13",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.6.0",
@@ -29,6 +30,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.14",
+    "adm-zip": "^0.5.17",
     "better-sqlite3": "^12.9.0",
     "dotenv": "^17.4.2",
     "gray-matter": "^4.0.3",
