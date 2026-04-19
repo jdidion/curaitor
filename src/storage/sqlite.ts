@@ -15,6 +15,9 @@ import type {
 
 const DEFAULT_STATS: AccuracyStats = {
   autonomy_level: 1,
+  max_error_rate: 0.05,
+  fn_weight: 2,
+  fp_weight: 1,
   lifetime: {
     instapaper: { tp: 0, fp: 0, tn: 0, fn: 0 },
     rss: { tp: 0, fp: 0, tn: 0, fn: 0 },

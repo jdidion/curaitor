@@ -50,8 +50,9 @@ export interface RollingEntry {
 
 export interface AccuracyStats {
   autonomy_level: number;
-  max_fp_rate: number;           // max false positive rate before demotion (default 0.05)
-  max_fn_rate: number;           // max false negative rate before demotion (default 0.05)
+  max_error_rate: number;        // max weighted error rate before demotion (default 0.05)
+  fn_weight: number;             // false-negative error weight (default 2 — FNs are worse than FPs)
+  fp_weight: number;             // false-positive error weight (default 1)
   lifetime: {
     instapaper: SourceStats;
     rss: SourceStats;

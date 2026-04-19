@@ -16,8 +16,9 @@ app.get('/', (c) => {
   const health = getCronHealth();
   const verify = verifyCronEnvironment();
   const stats = backend.loadStats();
-  const maxFpRate = stats.max_fp_rate ?? 0.05;
-  const maxFnRate = stats.max_fn_rate ?? 0.05;
+  const maxErrorRate = stats.max_error_rate ?? 0.05;
+  const fnWeight = stats.fn_weight ?? 2;
+  const fpWeight = stats.fp_weight ?? 1;
 
   const cronRows = jobs.map((j) => `
     <div class="card" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
@@ -83,23 +84,37 @@ app.get('/', (c) => {
 
         <div x-show="tab === 'thresholds'" style="display:none">
           <div style="margin-bottom:16px;color:var(--text-muted);font-size:14px;">
-            Maximum error rates before the autonomy system demotes. Applied to the rolling window of the last 50 reviewed articles.
+            The autonomy system tracks a weighted error rate over the last 50 reviewed articles.
+            Errors are weighted — by default a false negative counts twice as much as a false positive,
+            because missing something interesting is worse than surfacing something you skip.
           </div>
           <form hx-post="/settings/thresholds" hx-swap="none" class="card" style="display:flex;flex-direction:column;gap:16px;">
             <div style="display:flex;align-items:center;gap:16px;">
-              <label style="width:200px;font-weight:500;">Max False Positive Rate</label>
-              <input type="number" name="max_fp_rate" value="${maxFpRate * 100}" min="0" max="100" step="0.1"
+              <label style="width:200px;font-weight:500;">Max Error Rate</label>
+              <input type="number" name="max_error_rate" value="${maxErrorRate * 100}" min="0" max="100" step="0.1"
                 style="width:100px;padding:6px 10px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;text-align:right;" />
-              <span style="color:var(--text-muted);">% (articles wrongly sent to Review)</span>
+              <span style="color:var(--text-muted);">% (weighted error budget)</span>
             </div>
             <div style="display:flex;align-items:center;gap:16px;">
-              <label style="width:200px;font-weight:500;">Max False Negative Rate</label>
-              <input type="number" name="max_fn_rate" value="${maxFnRate * 100}" min="0" max="100" step="0.1"
+              <label style="width:200px;font-weight:500;">False Negative Weight</label>
+              <input type="number" name="fn_weight" value="${fnWeight}" min="0" max="20" step="0.1"
                 style="width:100px;padding:6px 10px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;text-align:right;" />
-              <span style="color:var(--text-muted);">% (articles wrongly Ignored)</span>
+              <span style="color:var(--text-muted);">× (missed interesting articles)</span>
             </div>
-            <div style="font-size:13px;color:var(--text-dim);">
-              With a rolling window of 50 articles, 5% = 2.5 articles. Demotion triggers when the rate exceeds the threshold and the window has at least 20 entries.
+            <div style="display:flex;align-items:center;gap:16px;">
+              <label style="width:200px;font-weight:500;">False Positive Weight</label>
+              <input type="number" name="fp_weight" value="${fpWeight}" min="0" max="20" step="0.1"
+                style="width:100px;padding:6px 10px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;text-align:right;" />
+              <span style="color:var(--text-muted);">× (wrongly surfaced articles)</span>
+            </div>
+            <div style="font-size:13px;color:var(--text-dim);line-height:1.6;">
+              <strong>How it works:</strong> each error contributes its weight; the score is normalized by the larger weight
+              so the threshold stays interpretable as a fraction of the window (e.g. 5% ≈ 2.5 articles out of 50).
+              Demotion triggers when the score exceeds the threshold and the window has ≥20 entries.
+              <br><br>
+              <strong>Defaults (FN=2, FP=1):</strong> favor recall — the agent errs on the side of surfacing.
+              <strong>Set FN=FP=1</strong> to treat errors equally.
+              <strong>Raise FN</strong> further to be more sensitive to missed articles during training.
             </div>
             <div><button type="submit" class="btn btn-accent">Save Thresholds</button></div>
           </form>
@@ -158,8 +173,9 @@ for (const [route, key] of Object.entries(CONFIG_MAP)) {
 app.post('/thresholds', async (c) => {
   const body = await c.req.parseBody();
   const stats = getBackend().loadStats();
-  stats.max_fp_rate = parseFloat(body['max_fp_rate'] as string) / 100;
-  stats.max_fn_rate = parseFloat(body['max_fn_rate'] as string) / 100;
+  stats.max_error_rate = parseFloat(body['max_error_rate'] as string) / 100;
+  stats.fn_weight = parseFloat(body['fn_weight'] as string);
+  stats.fp_weight = parseFloat(body['fp_weight'] as string);
   getBackend().saveStats(stats);
   c.header('HX-Trigger', 'configSaved');
   return c.html('<div class="toast">Thresholds saved</div>');

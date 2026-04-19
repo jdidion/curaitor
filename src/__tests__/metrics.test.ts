@@ -5,6 +5,9 @@ import type { AccuracyStats } from '../storage/types.js';
 function makeEmptyStats(overrides?: Partial<AccuracyStats>): AccuracyStats {
   return {
     autonomy_level: 0,
+    max_error_rate: 0.05,
+    fn_weight: 2,
+    fp_weight: 1,
     lifetime: {
       instapaper: { tp: 0, fp: 0, tn: 0, fn: 0 },
       rss: { tp: 0, fp: 0, tn: 0, fn: 0 },
@@ -92,6 +95,91 @@ describe('computeMetrics', () => {
     const m = computeMetrics(stats);
     expect(m.level).toBe(2);
     expect(m.levelName).toBe('Confident');
+  });
+
+  it('computes unweighted error rate when weights are equal', () => {
+    const stats = makeEmptyStats({
+      fn_weight: 1,
+      fp_weight: 1,
+      rolling_window: Array.from({ length: 20 }, (_, i) => ({
+        date: '2026-04-01',
+        source: 'rss',
+        signal: i < 2 ? 'fp' : i < 4 ? 'fn' : 'tp',
+        title: `A${i}`,
+      })),
+    });
+    const m = computeMetrics(stats);
+    // 4 errors out of 20 = 0.2
+    expect(m.rollingErrorRate).toBeCloseTo(0.2);
+  });
+
+  it('weights FNs heavier than FPs by default', () => {
+    const stats = makeEmptyStats({
+      rolling_window: Array.from({ length: 20 }, (_, i) => ({
+        date: '2026-04-01',
+        source: 'rss',
+        signal: i < 4 ? 'fn' : 'tp',
+        title: `A${i}`,
+      })),
+    });
+    const m = computeMetrics(stats);
+    // 4 fn * 2 weight / (20 * max_weight=2) = 8/40 = 0.2
+    expect(m.rollingErrorRate).toBeCloseTo(0.2);
+    // Same raw count of FPs should score half as much
+    const stats2 = makeEmptyStats({
+      rolling_window: Array.from({ length: 20 }, (_, i) => ({
+        date: '2026-04-01',
+        source: 'rss',
+        signal: i < 4 ? 'fp' : 'tp',
+        title: `A${i}`,
+      })),
+    });
+    const m2 = computeMetrics(stats2);
+    // 4 fp * 1 weight / (20 * 2) = 4/40 = 0.1
+    expect(m2.rollingErrorRate).toBeCloseTo(0.1);
+  });
+
+  it('does not flag errorExceeded below window minimum (20)', () => {
+    const stats = makeEmptyStats({
+      rolling_window: Array.from({ length: 10 }, (_, i) => ({
+        date: '2026-04-01',
+        source: 'rss',
+        signal: 'fn',
+        title: `A${i}`,
+      })),
+    });
+    const m = computeMetrics(stats);
+    expect(m.errorExceeded).toBe(false);
+  });
+
+  it('flags errorExceeded when weighted rate exceeds threshold and window is full enough', () => {
+    // 20 entries, 2 FNs with weight 2 = 4 error units / (20*2) = 0.1 > 0.05 threshold
+    const stats = makeEmptyStats({
+      max_error_rate: 0.05,
+      rolling_window: Array.from({ length: 20 }, (_, i) => ({
+        date: '2026-04-01',
+        source: 'rss',
+        signal: i < 2 ? 'fn' : 'tp',
+        title: `A${i}`,
+      })),
+    });
+    const m = computeMetrics(stats);
+    expect(m.errorExceeded).toBe(true);
+  });
+
+  it('honors custom max_error_rate', () => {
+    const stats = makeEmptyStats({
+      max_error_rate: 0.2,
+      rolling_window: Array.from({ length: 20 }, (_, i) => ({
+        date: '2026-04-01',
+        source: 'rss',
+        signal: i < 2 ? 'fn' : 'tp',
+        title: `A${i}`,
+      })),
+    });
+    const m = computeMetrics(stats);
+    // Score is 0.1, threshold is 0.2 — should not exceed
+    expect(m.errorExceeded).toBe(false);
   });
 
   it('reports review_ignored_passes and last_review_ignored', () => {

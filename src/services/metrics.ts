@@ -18,8 +18,9 @@ export function saveStats(stats: AccuracyStats): void {
   getBackend().saveStats(stats);
 }
 
-export const DEFAULT_MAX_FP_RATE = 0.05;
-export const DEFAULT_MAX_FN_RATE = 0.05;
+export const DEFAULT_MAX_ERROR_RATE = 0.05;
+export const DEFAULT_FN_WEIGHT = 2;   // FNs (wrongly ignored) penalized 2x by default
+export const DEFAULT_FP_WEIGHT = 1;   // FPs (wrongly sent to review/inbox) baseline
 
 export interface Metrics {
   level: number;
@@ -32,10 +33,11 @@ export interface Metrics {
   rollingRecall: number;
   rollingFpRate: number;
   rollingFnRate: number;
-  maxFpRate: number;
-  maxFnRate: number;
-  fpExceeded: boolean;
-  fnExceeded: boolean;
+  rollingErrorRate: number;     // weighted error rate used for demotion gate
+  maxErrorRate: number;
+  fnWeight: number;
+  fpWeight: number;
+  errorExceeded: boolean;
   reviewIgnoredPasses: number;
   lastReviewIgnored: string | null;
   lifetime: { tp: number; fp: number; tn: number; fn: number };
@@ -63,8 +65,17 @@ export function computeMetrics(stats: AccuracyStats): Metrics {
   const rwRecall = rw.tp + rw.fn > 0 ? rw.tp / (rw.tp + rw.fn) : 0;
   const rwFpRate = rwTotal > 0 ? rw.fp / rwTotal : 0;
   const rwFnRate = rwTotal > 0 ? rw.fn / rwTotal : 0;
-  const maxFpRate = stats.max_fp_rate ?? DEFAULT_MAX_FP_RATE;
-  const maxFnRate = stats.max_fn_rate ?? DEFAULT_MAX_FN_RATE;
+  const fnWeight = stats.fn_weight ?? DEFAULT_FN_WEIGHT;
+  const fpWeight = stats.fp_weight ?? DEFAULT_FP_WEIGHT;
+  const maxErrorRate = stats.max_error_rate ?? DEFAULT_MAX_ERROR_RATE;
+
+  // Weighted error rate: weight per error, normalized so that an "all errors" window
+  // with the heavier class scores 1.0. This keeps maxErrorRate interpretable as a
+  // fraction of the window regardless of weight choice.
+  const maxWeight = Math.max(fnWeight, fpWeight, 1);
+  const rollingErrorRate = rwTotal > 0
+    ? (rw.fn * fnWeight + rw.fp * fpWeight) / (rwTotal * maxWeight)
+    : 0;
 
   return {
     level: stats.autonomy_level,
@@ -77,10 +88,11 @@ export function computeMetrics(stats: AccuracyStats): Metrics {
     rollingRecall: rwRecall,
     rollingFpRate: rwFpRate,
     rollingFnRate: rwFnRate,
-    maxFpRate,
-    maxFnRate,
-    fpExceeded: rwTotal >= 20 && rwFpRate > maxFpRate,
-    fnExceeded: rwTotal >= 20 && rwFnRate > maxFnRate,
+    rollingErrorRate,
+    maxErrorRate,
+    fnWeight,
+    fpWeight,
+    errorExceeded: rwTotal >= 20 && rollingErrorRate > maxErrorRate,
     reviewIgnoredPasses: stats.review_ignored_passes,
     lastReviewIgnored: stats.last_review_ignored,
     lifetime: lt,
