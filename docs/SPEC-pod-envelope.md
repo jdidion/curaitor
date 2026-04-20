@@ -135,6 +135,8 @@ Fields reserved for future specs; implementers MAY emit but MUST NOT depend on t
 - Receivers MUST verify fingerprints before trusting payload content. Fingerprint mismatch = reject.
 - Fingerprints are computed over the raw file bytes, not over semantic content. Re-serialization changes fingerprints and requires a new pod ID.
 
+**Shape A body canonicalization.** The "body" is everything after the closing `---\n` of the frontmatter. Both writer and reader MUST treat the body as UTF-8 bytes with no BOM and LF (`\n`) line endings when computing and verifying the fingerprint. Tools MUST NOT normalize line endings during transport (disable `git autocrlf`, etc.). If a renderer or editor mutates the bytes, the pod is considered tampered and MUST be rejected.
+
 ### Versioning
 
 - `version` (envelope) and `payload.version` evolve independently
